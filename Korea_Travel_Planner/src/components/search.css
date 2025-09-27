@@ -1,0 +1,107 @@
+.div-wrapper {
+    background-color: #ffffff;
+    display: flex;
+    min-height: 1024px;
+    min-width: 1440px;
+    width: 100%;
+}
+
+.div-wrapper .frame {
+    align-items: center;
+    background-color: #f2f2f2;
+    display: flex;
+    gap: 182px;
+    height: 86px;
+    justify-content: center;
+    padding: 26px 39px;
+    position: relative;
+    width: 1440px;
+}
+
+.div-wrapper .user-wrapper {
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 20px;
+    display: inline-flex;
+    gap: 10px;
+    left: 1357px;
+    padding: 10px;
+    position: absolute;
+    top: 21px;
+}
+
+.div-wrapper .user-instance {
+    height: 24px !important;
+    position: relative !important;
+    width: 24px !important;
+}
+
+.div-wrapper .arrow-left-sharp {
+    height: 35px !important;
+    left: 39px !important;
+    position: absolute !important;
+    top: 26px !important;
+    width: 35px !important;
+}
+
+.div-wrapper .search-bar {
+    align-items: center;
+    background-color: #fcfcfc;
+    border-radius: 25px;
+    display: flex;
+    height: 54px;
+    justify-content: space-between;
+    margin-bottom: -10.00px;
+    margin-top: -10.00px;
+    padding: 11px 21px;
+    position: relative;
+    width: 792px;
+}
+
+.div-wrapper .group {
+    height: 25.41px;
+    position: relative;
+    width: 195px;
+}
+
+.div-wrapper .text-wrapper {
+    color: #000000;
+    font-family: "Inter-Regular", Helvetica;
+    font-size: 22px;
+    font-weight: 400;
+    height: 100%;
+    left: 0;
+    letter-spacing: 0;
+    line-height: normal;
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    width: 98.97%;
+}
+
+.div-wrapper .iconsax-linear-wrapper {
+    border: 1px solid;
+    border-color: #00000042;
+    border-radius: 15px;
+    height: 38px;
+    margin-bottom: -3.00px;
+    margin-top: -3.00px;
+    position: relative;
+    width: 38px;
+}
+
+.div-wrapper .iconsax-linear {
+    height: 36.47%;
+    left: 29.33%;
+    position: relative;
+    top: 31.25%;
+    width: 41.33%;
+}
+
+.div-wrapper .vector {
+    height: 83.33%;
+    left: 3.56%;
+    position: absolute;
+    top: 2.92%;
+    width: 83.33%;
+}
