@@ -6,7 +6,7 @@ body {
 }
 
 .schedule-container {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
   background-color: #ffffff;
   min-height: 100vh;
@@ -14,25 +14,22 @@ body {
 }
 
 /* 헤더 */
-.schedule-header {
+.header-button {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.schedule-header h1 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #343a40;
-}
-
-.header-icon {
-  font-size: 1.5rem;
-  color: #495057;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
   cursor: pointer;
+  padding: 0;
+  flex-shrink: 0; /* 크기 고정 */
+}
+
+/* 뒤로가기 아이콘 */
+.icon-back {
+  font-size: 1.8rem;
+  color: #868e96;
+  font-weight: bold;
 }
 
 /* 메인 콘텐츠 */

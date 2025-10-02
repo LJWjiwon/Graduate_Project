@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400&display=swap');
+
+/* 헤더 전체 컨테이너 */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1%;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+
+/* 헤더 양 옆 버튼 (뒤로가기, 유저) */
+.header-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0; /* 크기 고정 */
+}
+
+
+/* 유저 아이콘 */
+.icon-user {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* 원형 */
+  border: 1px solid #e9ecef;
+  background-color: #fff;
+  overflow: hidden; /* 아이콘이 원 밖으로 나가지 않도록 */
+}
+
+.icon-user span {
+  font-size: 1.5rem;
+  color: #868e96;
+}

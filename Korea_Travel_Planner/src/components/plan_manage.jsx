@@ -1,5 +1,6 @@
 import React from 'react';
 import './plan_manage.css';
+import Header from './header.jsx';
 
 // 예시 데이터 배열
 const scheduleData = [
@@ -37,11 +38,13 @@ const ScheduleItem = ({ title, dateRange, duration }) => {
 const Manage = () => {
   return (
     <div className="schedule-container">
-      <header className="schedule-header">
-        <div className="header-icon back-icon">{'<'}</div>
-        <h1>일정 관리</h1>
-        <div className="header-icon user-icon">👤</div>
-      </header>
+      <Header
+        left = {<button className="header-button icon-back">
+          {'<'}
+        </button>}
+        center  = {<h3>일정 관리</h3>}
+      >
+      </Header> 
       
       <main className="schedule-main">
         <div className="add-schedule-wrapper">

@@ -1,5 +1,7 @@
 import React from 'react';
 import './Info.css';
+import Header from './header.jsx';
+import Footer from './footer.jsx';
 
 // 아이콘을 위한 간단한 컴포넌트
 const Icon = ({ className, children }) => <div className={className}>{children}</div>;
@@ -7,16 +9,22 @@ const Icon = ({ className, children }) => <div className={className}>{children}<
 const Info = () => {
   return (
     <div className="place-detail-container">
-      <header className="detail-header">
-        <Icon className="header-icon back-arrow">{'<'}</Icon>
-        <div className="search-bar-detail">
-          <input type="text" placeholder="Search anything...." />
-          <Icon className="header-icon search-icon">🔍</Icon>
-        </div>
-        <Icon className="header-icon user-profile">👤</Icon>
-      </header>
+      <Header
+        left = {<button className="header-button icon-back">
+          {'<'}
+        </button>}
+        center  = {<div className="search-container">
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Search anything...." 
+          />
+          <span className="search-icon-span">🔍</span>
+        </div>}
+      >
+      </Header> 
 
-      <main className="detail-main-content">
+      <main className="detail-main-content"> 
         <div className="image-placeholder"></div>
         <div className="info-section">
           <h1 className="place-title">부산 씨라이프 아쿠아리움</h1>
@@ -28,16 +36,7 @@ const Info = () => {
         </div>
       </main>
 
-      <footer className="detail-floating-buttons">
-        <button className="fab-detail">
-          <span className="fab-icon">+</span>
-          <span>일정 추가</span>
-        </button>
-        <button className="fab-detail">
-          <span className="fab-icon">+</span>
-          <span>일정 관리</span>
-        </button>
-      </footer>
+      <Footer />
     </div>
   );
 };
