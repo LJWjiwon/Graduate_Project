@@ -1,71 +1,45 @@
-import React from "react";
-// import { ArrowLeft01Sharp } from "./ArrowLeft01Sharp";
-// import { User } from "./User";
-// import addCircle from "./add-circle.svg";
-// import image3 from "./image-3.png";
-// import image from "./image.svg";
-import "./info.css";
-// import vector from "./vector.svg";
+import React from 'react';
+import './Info.css';
 
-function Info() {
-    return (
-        <div className="screen">
-            <div className="frame">
-                <div className="user-wrapper">
-                    {/* <User className="user-instance" /> */}
-                </div>
+// 아이콘을 위한 간단한 컴포넌트
+const Icon = ({ className, children }) => <div className={className}>{children}</div>;
 
-                {/* <ArrowLeft01Sharp className="arrow-left-sharp" /> */}
-                <div className="search-bar">
-                    <div className="group">
-                        <div className="text-wrapper">Search anything....</div>
-                    </div>
-
-                    <div className="iconsax-linear-wrapper">
-                        <div className="iconsax-linear">
-                            {/* <img className="vector" alt="Vector" src={vector} /> */}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="div">
-                {/* <img className="image" alt="Image" src={image3} /> */}
-
-                <div className="div-wrapper">
-                    <div className="text-wrapper-2">부산 씨라이프 아쿠아리움</div>
-                </div>
-
-                <div className="frame-2">
-                    <div className="text-wrapper-3">
-                        블라블라
-                        <br />
-                        블라
-                        <br />
-                        블라ㅏㅏ
-                    </div>
-                </div>
-            </div>
-
-            <div className="frame-3">
-                <div className="frame-4">
-                    {/* <img className="add-circle" alt="Add circle" src={addCircle} /> */}
-
-                    <div className="frame-5">
-                        <div className="text-wrapper-4">일정 추가</div>
-                    </div>
-                </div>
-
-                <div className="frame-6">
-                    {/* <img className="add-circle" alt="Add circle" src={image} /> */}
-
-                    <div className="frame-5">
-                        <div className="text-wrapper-4">일정 관리</div>
-                    </div>
-                </div>
-            </div>
+const Info = () => {
+  return (
+    <div className="place-detail-container">
+      <header className="detail-header">
+        <Icon className="header-icon back-arrow">{'<'}</Icon>
+        <div className="search-bar-detail">
+          <input type="text" placeholder="Search anything...." />
+          <Icon className="header-icon search-icon">🔍</Icon>
         </div>
-    );
+        <Icon className="header-icon user-profile">👤</Icon>
+      </header>
+
+      <main className="detail-main-content">
+        <div className="image-placeholder"></div>
+        <div className="info-section">
+          <h1 className="place-title">부산 씨라이프 아쿠아리움</h1>
+          <div className="description-box">
+            <p>블라블라</p>
+            <p>블라</p>
+            <p>블라ㅏㅏ</p>
+          </div>
+        </div>
+      </main>
+
+      <footer className="detail-floating-buttons">
+        <button className="fab-detail">
+          <span className="fab-icon">+</span>
+          <span>일정 추가</span>
+        </button>
+        <button className="fab-detail">
+          <span className="fab-icon">+</span>
+          <span>일정 관리</span>
+        </button>
+      </footer>
+    </div>
+  );
 };
 
 export default Info;

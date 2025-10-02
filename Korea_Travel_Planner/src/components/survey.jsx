@@ -1,136 +1,87 @@
-import React from "react";
-// import { ExpandMoreFilled } from "./ExpandMoreFilled";
-// import image from "./image.svg";
-import "./survey.css";
-// import vertical from "./vertical.svg";
+import React, { useState } from 'react';
+import './survey.css';
 
-function Survey() {
-    return (
-        <div className="screen">
-            <div className="frame">
-                <p className="text-wrapper">
-                    더 나은 추천을 위한 설문입니다. 설문에 응해주시면 맞춤화된 추천을
-                    받아보실 수 있습니다.
-                </p>
+const Survey = () => {
+  // 각 질문에 대한 상태를 관리합니다.
+  const [selectedAge, setSelectedAge] = useState(null);
+  const [selectedCompanion, setSelectedCompanion] = useState(null);
+
+  const ageGroups = ['10대', '20대', '30대', '40대', '50대 이상'];
+  const companions = ['혼자', '친구', '연인', '가족', '기타'];
+
+  return (
+    <div className="form-container">
+      <div className="form-wrapper">
+        <p className="intro-text">
+          더 나은 추천을 위한 첫걸음입니다. 설문에 응해주시면 맞춤화된 추천을 받아보실 수 있습니다.
+        </p>
+
+        <h1 className="form-title">1. 기본정보</h1>
+
+        <form>
+          {/* 나이대 질문 */}
+          <div className="form-group">
+            <label className="form-label">나이대는 어떻게 되시나요?</label>
+            <div className="button-group">
+              {ageGroups.map((age) => (
+                <button
+                  key={age}
+                  type="button"
+                  className={`choice-button ${selectedAge === age ? 'selected' : ''}`}
+                  onClick={() => setSelectedAge(age)}
+                >
+                  {age}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="div">
-                <div className="div-wrapper">
-                    <div className="text-wrapper-2">기본정보</div>
-                </div>
-
-                <div className="frame-2">
-                    <div className="frame-3">
-                        <div className="text-wrapper-3">나이대는 어떻게 되시나요?</div>
-                    </div>
-
-                    <div className="frame-4">
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">10대</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">20대</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">30대</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">40대</div>
-                        </div>
-
-                        <div className="frame-6">
-                            <div className="text-wrapper-4">50대 이상</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="frame-2">
-                    <div className="div-wrapper">
-                        <div className="text-wrapper-3">여행을 주로 누구와 다니나요?</div>
-                    </div>
-
-                    <div className="frame-7">
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">혼자</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">친구</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">연인</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">가족</div>
-                        </div>
-
-                        <div className="frame-5">
-                            <div className="text-wrapper-4">기타</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="frame-8">
-                    <div className="text-wrapper-3">사는 지역이 어떻게 되시나요?</div>
-
-                    <div className="frame-9">
-                        <div className="button-group">
-                            <button className="button">
-                                <div className="base">
-                                    <div className="button-2">지역 선택(시/도)</div>
-                                </div>
-                            </button>
-
-                            {/* <img className="vertical" alt="Vertical" src={image} /> */}
-
-                            <div className="base-wrapper">
-                                <div className="base">
-                                    <div className="masked-icon">
-                                        {/* <ExpandMoreFilled className="icon-left" color="white" /> */}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="button-group">
-                            <button className="button">
-                                <div className="base">
-                                    <div className="button-2">세부지역 선택(시/군/구)</div>
-                                </div>
-                            </button>
-
-                            {/* <img className="vertical" alt="Vertical" src={vertical} /> */}
-
-                            <div className="base-wrapper">
-                                <div className="base">
-                                    <div className="masked-icon">
-                                        {/* <ExpandMoreFilled className="icon-left" color="white" /> */}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          {/* 여행 동반자 질문 */}
+          <div className="form-group">
+            <label className="form-label">여행을 주로 누구랑 다니시나요?</label>
+            <div className="button-group">
+              {companions.map((comp) => (
+                <button
+                  key={comp}
+                  type="button"
+                  className={`choice-button ${selectedCompanion === comp ? 'selected' : ''}`}
+                  onClick={() => setSelectedCompanion(comp)}
+                >
+                  {comp}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="frame-wrapper">
-                <div className="frame-10">
-                    <div className="frame-11">
-                        <div className="text-wrapper-5">건너뛰기</div>
-                    </div>
-
-                    <div className="frame-12">
-                        <div className="text-wrapper-5">다음</div>
-                    </div>
-                </div>
+          {/* 거주 지역 질문 */}
+          <div className="form-group">
+            <label className="form-label">사는 지역이 어떻게 되시나요?</label>
+            <div className="select-group">
+              <select className="region-select" defaultValue="">
+                <option value="" disabled>지역 선택(시/도)</option>
+                <option value="seoul">서울특별시</option>
+                <option value="busan">부산광역시</option>
+                <option value="incheon">인천광역시</option>
+                {/* 다른 시/도 옵션 추가 */}
+              </select>
+              <select className="region-select" defaultValue="">
+                <option value="" disabled>세부지역 선택(시/군/구)</option>
+                <option value="gangnam">강남구</option>
+                <option value="mapo">마포구</option>
+                <option value="haeundae">해운대구</option>
+                {/* 다른 시/군/구 옵션 추가 */}
+              </select>
             </div>
-        </div>
-    );
+          </div>
+        </form>
+      </div>
+
+      <div className="bottom-buttons">
+        <button className="action-button skip-button">건너뛰기</button>
+        <button className="action-button next-button">다음</button>
+      </div>
+    </div>
+  );
 };
 
 export default Survey;

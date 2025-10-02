@@ -1,245 +1,160 @@
-.div-wrapper {
-    background-color: #ffffff;
+/* --- Overall Container --- */
+.login-container {
     display: flex;
-    min-height: 1024px;
-    min-width: 1440px;
-    width: 100%;
-}
-
-.div-wrapper .frame {
-    background-image: url(./frame-1.png);
-    background-position: 50% 50%;
+    height: 100vh; /* Full viewport height */
+    width: 100vw;  /* Full viewport width */
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* --- Left Section: Image --- */
+  .login-image-section {
+    flex: 3; /* Takes up 3 parts of the space (approx 60%) */
+    background-image: url('gwangan-bridge.jpg'); /* Replace with your actual image path/URL */
+    /* The image appears to be a bridge, likely Gwangan Bridge in Busan. */
     background-size: cover;
-    height: 1024px;
-    width: 987px;
-}
-
-.div-wrapper .div {
-    align-items: center;
-    background-color: #ececec;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* A slight blue overlay is visible in the image, you might adjust it with a pseudo-element if needed */
+  }
+  
+  /* --- Right Section: Form --- */
+  .login-form-section {
+    flex: 2; /* Takes up 2 parts of the space (approx 40%) */
+    background-color: #f7f7f7; /* Light gray background */
+    padding: 40px;
     display: flex;
     flex-direction: column;
-    gap: 80px;
-    height: 1024px;
-    justify-content: center;
-    padding: 129px 44px;
-    position: relative;
-    width: 453px;
-}
-
-.div-wrapper .frame-2 {
-    align-items: flex-start;
-    display: inline-flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 30px;
-    position: relative;
-}
-
-.div-wrapper .frame-3 {
+    justify-content: center; /* Vertically center the form content */
     align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 10px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-}
-
-.div-wrapper .text-wrapper-2 {
-    color: #000000;
-    font-family: "Roboto-Medium", Helvetica;
-    font-size: 40px;
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: normal;
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
-}
-
-.div-wrapper .frame-4 {
-    align-items: center;
-    background-color: #ffffff;
-    display: flex;
-    gap: 10px;
-    height: 57px;
-    padding: 10px 20px;
-    position: relative;
-    width: 310px;
-}
-
-.div-wrapper .text-wrapper-3 {
-    color: #d9d9d9;
-    font-family: "Roboto-Medium", Helvetica;
-    font-size: 25.4px;
-    font-weight: 500;
-    letter-spacing: 0;
-    line-height: normal;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
-}
-
-.div-wrapper .frame-5 {
-    align-items: flex-start;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 5px;
-    position: relative;
-}
-
-.div-wrapper .button-wrapper {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    position: relative;
-    width: 111px;
-}
-
-.div-wrapper .button {
-    all: unset;
-    align-items: center;
-    align-self: stretch;
-    border: 1px solid;
-    border-color: var(--palette-info-states-outlinedborder);
-    border-radius: var(--shape-borderradius);
+    text-align: center;
     box-sizing: border-box;
+  }
+  
+  .login-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    align-self: flex-start; /* Align title to the left */
+  }
+  
+  /* --- Form Fields --- */
+  .form-fields {
+    width: 100%;
+    max-width: 300px; /* Limit max width for a cleaner look */
+    margin-bottom: 20px;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    font-size: 16px;
+    background-color: white; /* White background for input fields */
+  }
+  
+  /* --- Action Buttons (Login/Signup) --- */
+  .form-actions {
+    width: 100%;
+    max-width: 300px;
     display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    padding: 8px 22px;
-    position: relative;
-    width: 100%;
-}
-
-.div-wrapper .focus-ripple {
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}
-
-.div-wrapper .base {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 8px;
-    justify-content: center;
-    position: relative;
-}
-
-.div-wrapper .button-2 {
-    color: var(--palette-info-main);
-    font-family: var(--button-large-font-family);
-    font-size: var(--button-large-font-size);
-    font-style: var(--button-large-font-style);
-    font-weight: var(--button-large-font-weight);
-    letter-spacing: var(--button-large-letter-spacing);
-    line-height: var(--button-large-line-height);
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
-}
-
-.div-wrapper .base-2 {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 8px;
-    justify-content: center;
-    margin-left: -5.00px;
-    margin-right: -5.00px;
-    position: relative;
-}
-
-.div-wrapper .frame-6 {
-    align-items: flex-start;
-    align-self: stretch;
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 30px;
-    position: relative;
-    width: 100%;
-}
-
-.div-wrapper .google-action-login {
-    align-self: stretch;
-    background-color: #ffffff;
-    border-radius: 12.72px;
-    box-shadow: 0px 2.54px 3.82px #0000002b, 0px 0px 3.82px #00000015;
-    height: 69px;
-    position: relative;
-    width: 100%;
-}
-
-.div-wrapper .frame-7 {
-    align-items: flex-start;
-    background-color: #ffffff;
-    border-radius: 12.72px;
-    display: inline-flex;
-    gap: 19.09px;
-    left: calc(50.00% - 165px);
-    padding: 19.09px;
-    position: relative;
-    top: calc(50.00% - 34px);
-}
-
-.div-wrapper .google-logo {
-    height: 30.54px;
-    position: relative;
-    width: 30.54px;
-}
-
-.div-wrapper .text-wrapper-4 {
-    color: #0000008a;
-    font-family: "Roboto-Medium", Helvetica;
-    font-size: 25.4px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+  
+  .btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
     font-weight: 500;
-    height: 29.27px;
-    letter-spacing: 0;
-    line-height: normal;
-    margin-top: -1.27px;
-    position: relative;
-    white-space: nowrap;
-    width: 241.77px;
-}
-
-.div-wrapper .kakao-login-wrapper {
-    align-items: flex-start;
+    flex: 1; /* Make buttons take equal space */
+    margin: 0 5px;
+  }
+  
+  /* Primary Button (Login - Blue) */
+  .primary-btn {
+    background-color: #9cb9d5; /* Light blue color from the image */
+    color: #fff;
+  }
+  
+  /* Secondary Button (Signup - Lighter Blue/Gray) */
+  .secondary-btn {
+    background-color: #dbe4f1; /* Very light blue/gray color from the image */
+    color: #333;
+  }
+  
+  /* --- Social Login Buttons --- */
+  .social-login {
+    width: 100%;
+    max-width: 300px;
     display: flex;
-    flex: 0 0 auto;
     flex-direction: column;
-    gap: 10px;
-    position: relative;
-    width: 365px;
-}
-
-.div-wrapper .kakao-login-instance {
-    align-self: stretch !important;
-    height: 61px !important;
-    left: unset !important;
-    top: unset !important;
-    width: 100% !important;
-}
-
-.div-wrapper .design-component-instance-node {
-    height: 36px !important;
-    margin-bottom: -17.50px !important;
-    margin-top: -17.50px !important;
-    position: relative !important;
-    width: 36px !important;
-}
-
-.div-wrapper .kakao-login-2 {
-    margin-bottom: -18.50px !important;
-    margin-top: -18.50px !important;
-}
+    gap: 15px;
+  }
+  
+  .social-btn {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Slight shadow to lift the button */
+  }
+  
+  /* Google Button */
+  .google-btn {
+    background-color: #fff;
+    color: #333;
+  }
+  
+  .google-icon {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #4285f4; /* Google blue color */
+    font-size: 18px;
+  }
+  
+  /* Kakao Button (Distinct Yellow) */
+  .kakao-btn {
+    background-color: #fee500; /* Kakao's distinct yellow */
+    color: #3c1e1e; /* Dark text for contrast */
+    border: none;
+  }
+  
+  .kakao-icon {
+    /* For a real Kakao button, you'd use an image/SVG. */
+    /* Here we'll just use a placeholder to represent the icon space. */
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    /* background-color: #3c1e1e; /* Placeholder block */
+  }
+  
+  /* Optional: Add basic responsiveness */
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column;
+    }
+  
+    .login-image-section {
+      display: none; /* Hide image on smaller screens */
+    }
+  
+    .login-form-section {
+      flex: 1;
+      width: 100%;
+      padding: 20px;
+    }
+  }

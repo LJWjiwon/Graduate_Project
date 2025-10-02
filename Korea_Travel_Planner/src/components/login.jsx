@@ -1,80 +1,64 @@
-import React from "react";
-// import { KakaoLogin } from "./KakaoLogin";
-// import focusRipple from "./focus-ripple.svg";
-// import googleLogo from "./google-logo.svg";
-// import image from "./image.svg";
-import "./login.css";
+import React from 'react';
+import './login.css'; // Import the CSS file
 
-function Login() {
-    return (
-        <div className="div-wrapper">
-            <div className="frame" />
+const Login = () => {
+  return (
+    <div className="login-container">
+      {/* Left side: Image and background */}
+      <div className="login-image-section">
+        {/*
+          Note: In a real application, you'd import the image
+          or use a URL. For simplicity, the CSS will handle the
+          background image for this section.
+        */}
+      </div>
 
-            <div className="div">
-                <div className="frame-2">
-                    <div className="frame-3">
-                        <div className="text-wrapper-2">Login</div>
-                    </div>
+      {/* Right side: Login form */}
+      <div className="login-form-section">
+        <h2 className="login-title">Login</h2>
 
-                    <div className="frame-4">
-                        <div className="text-wrapper-3">아이디</div>
-                    </div>
+        <div className="form-fields">
+          {/* ID Input */}
+          <input
+            type="text"
+            placeholder="아이디" // Korean for "ID"
+            className="input-field"
+          />
 
-                    <div className="frame-4">
-                        <div className="text-wrapper-3">비밀번호</div>
-                    </div>
-
-                    <div className="frame-5">
-                        <div className="button-wrapper">
-                            <button className="button">
-                                <img
-                                    className="focus-ripple"
-                                    alt="Focus ripple"
-                                    // src={focusRipple}
-                                />
-
-                                <div className="base">
-                                    <div className="button-2">로그인</div>
-                                </div>
-                            </button>
-                        </div>
-
-                        <div className="button-wrapper">
-                            <button className="button">
-                                {/* <img className="focus-ripple" alt="Focus ripple" src={image} /> */}
-
-                                <div className="base-2">
-                                    <div className="button-2">회원가입</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="frame-6">
-                    <div className="google-action-login">
-                        <div className="frame-7">
-                            {/* <img className="google-logo" alt="Google logo" src={googleLogo} /> */}
-
-                            <div className="text-wrapper-4">Sign In with Google</div>
-                        </div>
-                    </div>
-
-                    <div className="kakao-login-wrapper">
-                        {/* <KakaoLogin
-                            className="kakao-login-instance"
-                            kakaoStyleOverrideClassName="design-component-instance-node"
-                            labelClassName="kakao-login-2"
-                            language="english"
-                            size="large"
-                            type="default"
-                            width="narrow"
-                        /> */}
-                    </div>
-                </div>
-            </div>
+          {/* Password Input */}
+          <input
+            type="password"
+            placeholder="비밀번호" // Korean for "Password"
+            className="input-field"
+          />
         </div>
-    );
+
+        <div className="form-actions">
+          {/* Login Button */}
+          <button className="btn primary-btn">
+            로그인 // Korean for "Login"
+          </button>
+          {/* Signup Button */}
+          <button className="btn secondary-btn">
+            회원가입 // Korean for "Sign up"
+          </button>
+        </div>
+
+        {/* Social Login Buttons */}
+        <div className="social-login">
+          {/* Google Login Button */}
+          <button className="social-btn google-btn">
+            <span className="google-icon">G</span> Sign In with Google
+          </button>
+
+          {/* Kakao Login Button (Yellow) */}
+          <button className="social-btn kakao-btn">
+            <span className="kakao-icon"></span> Login with Kakao
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Login;

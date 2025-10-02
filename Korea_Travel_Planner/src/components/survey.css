@@ -1,332 +1,131 @@
-.screen {
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    min-height: 1024px;
-    min-width: 1440px;
-    width: 100%;
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+/* 전체 컨테이너 및 폰트 설정 */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
-.screen .frame {
-    align-items: center;
-    display: inline-flex;
-    gap: 10px;
-    height: 42px;
-    justify-content: center;
-    margin-left: 16px;
-    margin-top: 20px;
-    padding: 10px;
-    position: relative;
-    width: 762px;
+.form-wrapper {
+  width: 100%;
+  max-width: 700px;
+  background-color: white;
+  padding: 3rem;
+  border-radius: 8px;
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); */ /* 그림자 효과는 이미지에 없어서 주석 처리 */
 }
 
-.screen .text-wrapper {
-    color: #545454;
-    font-family: "Roboto-Medium", Helvetica;
-    font-size: 17px;
-    font-weight: 500;
-    height: 22px;
-    letter-spacing: 0.46px;
-    line-height: 26px;
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: 742px;
+/* 상단 안내 문구 */
+.intro-text {
+  font-size: 0.9rem;
+  color: #868e96;
+  margin-bottom: 3rem;
 }
 
-.screen .div {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    gap: 35px;
-    height: 817px;
-    margin-top: 11px;
-    padding: 22px 26px;
-    position: relative;
-    width: 1440px;
+/* 제목 */
+.form-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #343a40;
+  text-align: center;
+  margin-bottom: 4rem;
 }
 
-.screen .div-wrapper {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 10px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
+/* 폼 그룹 (라벨 + 입력) */
+.form-group {
+  margin-bottom: 3rem;
+  text-align: center;
 }
 
-.screen .text-wrapper-2 {
-    color: #5671f4;
-    font-family: "Roboto-Bold", Helvetica;
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: 0.46px;
-    line-height: 26px;
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
+.form-label {
+  display: block;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  color: #495057;
 }
 
-.screen .frame-2 {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 7px;
-    position: relative;
-    width: 100%;
+/* 선택 버튼 그룹 */
+.button-group,
+.select-group {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.screen .frame-3 {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 10px;
-    justify-content: center;
-    padding: 10px 0px;
-    position: relative;
+/* 선택 버튼 (나이, 동반자) */
+.choice-button {
+  padding: 0.7rem 1.8rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #495057;
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-.screen .text-wrapper-3 {
-    color: #000000;
-    font-family: "Roboto-Regular", Helvetica;
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 0.46px;
-    line-height: 26px;
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
+.choice-button:hover {
+  background-color: #e9ecef;
 }
 
-.screen .frame-4 {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    flex: 0 0 auto;
-    gap: 20px;
-    justify-content: center;
-    position: relative;
-    width: 100%;
+.choice-button.selected {
+  background-color: #4285F4;
+  color: white;
+  border-color: #4285F4;
+  font-weight: 700;
 }
 
-.screen .frame-5 {
-    align-items: center;
-    background-color: #ffffff;
-    border: 1px solid;
-    border-color: #4f8bfb;
-    border-radius: 5px;
-    display: flex;
-    gap: 10px;
-    height: 36px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-    width: 69px;
+/* 드롭다운 선택 (지역) */
+.region-select {
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  background-color: white;
+  color: #495057;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.65em auto;
+  min-width: 200px;
 }
 
-.screen .text-wrapper-4 {
-    color: #000000;
-    font-family: "Roboto-Regular", Helvetica;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: 0.46px;
-    line-height: 26px;
-    margin-bottom: -4.00px;
-    margin-top: -6.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
+/* 하단 버튼 영역 */
+.bottom-buttons {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  gap: 0.75rem;
 }
 
-.screen .frame-6 {
-    align-items: center;
-    background-color: #ffffff;
-    border: 1px solid;
-    border-color: #4f8bfb;
-    border-radius: 5px;
-    display: flex;
-    gap: 10px;
-    height: 36px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-    width: 89px;
+.action-button {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
-.screen .frame-7 {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    flex: 0 0 auto;
-    gap: 20px;
-    justify-content: center;
-    padding: 0px 40px;
-    position: relative;
-    width: 100%;
+.skip-button {
+  background-color: #e9ecef;
+  color: #495057;
 }
 
-.screen .frame-8 {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    position: relative;
-    width: 100%;
-}
-
-.screen .frame-9 {
-    align-items: flex-start;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 30px;
-    padding: 0px 20px;
-    position: relative;
-}
-
-.screen .button-group {
-    align-items: center;
-    background-color: var(--palette-primary-main);
-    border-radius: var(--shape-borderradius);
-    box-shadow: var(--elevation-2);
-    display: inline-flex;
-    flex: 0 0 auto;
-    overflow: hidden;
-    position: relative;
-}
-
-.screen .button {
-    all: unset;
-    align-items: center;
-    align-self: stretch;
-    background-color: var(--palette-primary-main);
-    border-radius: var(--shape-borderradius);
-    box-sizing: border-box;
-    display: inline-flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    padding: 6px 16px;
-    position: relative;
-}
-
-.screen .base {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    gap: 8px;
-    justify-content: center;
-    position: relative;
-}
-
-.screen .button-2 {
-    color: var(--palette-primary-contrasttext);
-    font-family: var(--button-medium-font-family);
-    font-size: var(--button-medium-font-size);
-    font-style: var(--button-medium-font-style);
-    font-weight: var(--button-medium-font-weight);
-    letter-spacing: var(--button-medium-letter-spacing);
-    line-height: var(--button-medium-line-height);
-    margin-top: -1.00px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
-}
-
-.screen .vertical {
-    align-self: stretch;
-    object-fit: cover;
-    position: relative;
-    width: 1px;
-}
-
-.screen .base-wrapper {
-    align-items: center;
-    background-color: var(--palette-primary-main);
-    border-radius: var(--shape-borderradius);
-    display: inline-flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    padding: 6px 16px;
-    position: relative;
-}
-
-.screen .masked-icon {
-    height: 24px;
-    position: relative;
-    width: 16px;
-}
-
-.screen .icon-left {
-    height: 20px !important;
-    left: calc(50.00% - 12px) !important;
-    position: absolute !important;
-    top: calc(50.00% - 10px) !important;
-    width: 20px !important;
-}
-
-.screen .frame-wrapper {
-    display: flex;
-    height: 134px;
-    width: 1440px;
-}
-
-.screen .frame-10 {
-    align-items: center;
-    display: inline-flex;
-    gap: 30px;
-    height: 45px;
-    margin-left: 998px;
-    margin-top: 22px;
-    position: relative;
-    width: 340px;
-}
-
-.screen .frame-11 {
-    align-items: center;
-    background-color: #a8d0ff;
-    border-radius: 5px;
-    display: flex;
-    gap: 10px;
-    height: 45px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-    width: 155px;
-}
-
-.screen .text-wrapper-5 {
-    color: #000000;
-    font-family: "Roboto-Regular", Helvetica;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: 0.46px;
-    line-height: 26px;
-    margin-top: -1.50px;
-    position: relative;
-    white-space: nowrap;
-    width: fit-content;
-}
-
-.screen .frame-12 {
-    align-items: center;
-    background-color: #429aff;
-    border-radius: 5px;
-    display: flex;
-    gap: 10px;
-    height: 45px;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-    width: 155px;
+.next-button {
+  background-color: #4285F4;
+  color: white;
 }

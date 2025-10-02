@@ -1,241 +1,91 @@
-import React from "react";
-// import { AddCircle } from "./AddCircle";
-// import { ArrowDown01Round } from "./ArrowDown01Round";
-// import { Location01 } from "./Location01";
-// import { PreferenceHorizontal } from "./PreferenceHorizontal";
-// import { User } from "./User";
-// import addCircle from "./add-circle.svg";
-// import image22 from "./image-2-2.png";
-// import image23 from "./image-2-3.png";
-// import image24 from "./image-2-4.png";
-// import image25 from "./image-2-5.png";
-// import image26 from "./image-2-6.png";
-// import image27 from "./image-2-7.png";
-// import image2 from "./image-2.png";
-// import image from "./image.png";
-import "./home.css";
-// import vector from "./vector.svg";
+import React from 'react';
+import './home.css';
 
-function Home() {
-    return (
-        <div className="screen">
-            <div className="frame">
-                <div className="div">
-                    {/* <Location01 className="icon-instance-node" /> */}
-                    <div className="div-wrapper">
-                        <div className="text-wrapper">부산광역시 북구</div>
-                    </div>
+// 아이콘을 간단한 컴포넌트로 만듭니다. 실제 프로젝트에서는 SVG 아이콘 라이브러리를 사용하는 것이 좋습니다.
+const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}</div>;
 
-                    {/* <ArrowDown01Round className="icon-instance-node" /> */}
-                </div>
+// 여행지 카드 컴포넌트
+const TravelCard = ({ rank, title }) => (
+  <div className="travel-card">
+    <div className="card-rank">{rank}</div>
+    <div className="card-image-placeholder"></div>
+    <p className="card-title">{title}</p>
+  </div>
+);
 
-                <div className="search-bar">
-                    <div className="group">
-                        <div className="text-wrapper-2">Search anything....</div>
-                    </div>
+// 메인 페이지 컴포넌트
+const Home = () => {
+  // 예시 데이터
+  const topDestinations = [
+    { id: 1, title: '부산 씨라이프 아쿠아리움' },
+    { id: 2, title: '부산 씨라이프 아쿠아리움' },
+    { id: 3, title: '부산 씨라이프 아쿠아리움' },
+    { id: 4, title: '부산 씨라이프 아쿠아리움' },
+  ];
 
-                    <div className="iconsax-linear-wrapper">
-                        <div className="iconsax-linear">
-                            {/* <img className="img" alt="Vector" src={vector} /> */}
-                        </div>
-                    </div>
-                </div>
+  const petFriendlyDestinations = [
+    { id: 1, title: '부산 씨라이프 아쿠아리움' },
+    { id: 2, title: '부산 씨라이프 아쿠아리움' },
+    { id: 3, title: '부산 씨라이프 아쿠아리움' },
+    { id: 4, title: '부산 씨라이프 아쿠아리움' },
+  ];
 
-                <div className="user-wrapper">
-                    {/* <User className="icon-instance-node" /> */}
-                </div>
-            </div>
-
-            <div className="frame-2" />
-
-            <div className="frame-3">
-                <div className="frame-4">
-                    {/* <AddCircle /> */}
-                    <div className="div-wrapper">
-                        <div className="text-wrapper-3">일정 추가</div>
-                    </div>
-                </div>
-
-                <div className="frame-5">
-                    {/* <img className="add-circle-2" alt="Add circle" src={addCircle} /> */}
-
-                    <div className="div-wrapper">
-                        <div className="text-wrapper-3">일정 관리</div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="frame-6">
-                <div className="frame-7">
-                    <div className="frame-8">
-                        <div className="frame-9">
-                            <div className="text-wrapper-4">부산 TOP 50 여행지</div>
-                        </div>
-
-                        <div className="preference-wrapper">
-                            {/* <PreferenceHorizontal className="preference" /> */}
-                        </div>
-                    </div>
-
-                    <div className="frame-10">
-                        <div className="frame-11">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">1</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image2} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-14">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">2</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-15">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">3</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image22} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-16">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">4</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image23} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="frame-7">
-                    <div className="frame-17">
-                        <div className="text-wrapper-4">반려동물 동반 여행지</div>
-                    </div>
-
-                    <div className="frame-18">
-                        <div className="frame-19">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">1</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image24} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-19">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">2</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image25} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-19">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">3</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image26} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="frame-19">
-                            <div className="frame-12">
-                                <div className="text-wrapper-5">4</div>
-                            </div>
-
-                            <div className="group-2">
-                                <div className="rectangle" />
-
-                                <div className="frame-13">
-                                    <div className="image-wrapper">
-                                        {/* <img className="image" alt="Image" src={image27} /> */}
-                                    </div>
-
-                                    <div className="text-wrapper-6">부산 씨라이프 아쿠아리움</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="container">
+      <header className="header">
+        <div className="location-selector">
+          <Icon name="location-icon">📍</Icon>
+          <span>부산광역시 북구</span>
+          <Icon name="dropdown-arrow">▾</Icon>
         </div>
-    );
+        <div className="search-bar">
+          <input type="text" placeholder="Search anything..." />
+          <Icon name="search-icon">🔍</Icon>
+        </div>
+        <div className="user-profile">
+          <Icon name="user-icon">👤</Icon>
+        </div>
+      </header>
+
+      <section className="hero-image-placeholder"></section>
+
+      <main className="content-area">
+        <section className="destination-section">
+          <div className="section-header">
+            <h2>부산 TOP 50 여행지</h2>
+            <Icon name="filter-icon">🎚️</Icon>
+          </div>
+          <div className="card-list">
+            {topDestinations.map(dest => (
+              <TravelCard key={dest.id} rank={dest.id} title={dest.title} />
+            ))}
+          </div>
+        </section>
+
+        <section className="destination-section">
+          <div className="section-header">
+            <h2>반려동물 동반 여행지</h2>
+          </div>
+          <div className="card-list">
+            {petFriendlyDestinations.map(dest => (
+              <TravelCard key={dest.id} rank={dest.id} title={dest.title} />
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="floating-buttons">
+        <button className="fab">
+          <Icon name="add-icon">+</Icon>
+          <span>일정 추가</span>
+        </button>
+        <button className="fab">
+          <Icon name="add-icon">+</Icon>
+          <span>일정 관리</span>
+        </button>
+      </footer>
+    </div>
+  );
 };
 
 export default Home;
-
-

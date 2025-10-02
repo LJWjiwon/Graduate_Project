@@ -25,11 +25,11 @@ function App() {
 
         {/* <Home /> */}
         {/* <Login /> */}
-        {/* <Info /> */}
+        <Info />
         {/* <Search /> */}
         {/* <Survey /> */}
         {/* <Plan /> */}
-        <Manage />
+        {/* <Manage /> */}
 
       </main>
 
