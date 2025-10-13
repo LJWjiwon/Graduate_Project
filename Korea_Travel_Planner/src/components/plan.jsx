@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './plan.css';
+import Map from './KakaoMap.jsx';
 
 // 아이콘을 위한 간단한 컴포넌트
 const Icon = ({ className, children }) => <div className={className}>{children}</div>;
@@ -47,8 +48,7 @@ const Plan = () => {
               <input type="text" placeholder="Search place..." />
             </div>
           </div>
-          {/* 지도 API 대신 색상으로 채운 div */}
-          <div className="map-placeholder"></div>
+          <Map />
         </div>
 
         {/* 오른쪽: 일정 사이드바 */}

@@ -28,8 +28,8 @@ function App() {
         {/* <Info /> */}
         {/* <Search /> */}
         {/* <Survey /> */}
-        {/* <Plan /> */}
-        <Manage />
+        <Plan />
+        {/* <Manage /> */}
 
       </main>
 
