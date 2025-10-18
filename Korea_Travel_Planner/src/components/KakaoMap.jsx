@@ -1,34 +1,38 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import './KakaoMap.css'; 
 import { KAKAO_APP_KEY } from '../api/config.js';
 
 const Map = () => {
     const mapContainer = useRef(null);
     const mapInstance = useRef(null);
+    const placesService = useRef(null);
+    const infowindow = useRef(null);
     
+    // [신규] Geocoder(주소 변환) 서비스를 위한 ref
+    const geocoder = useRef(null); 
+
     const [keyword, setKeyword] = useState('');
     const [places, setPlaces] = useState([]);
     const [markers, setMarkers] = useState([]);
-    const placesService = useRef(null);
-    const infowindow = useRef(null);
 
-    // '상세보기' 버튼 클릭 시
-    const handleShowDetail = (place) => {
+    // [useCallback 적용]
+    const handleShowDetail = useCallback((place) => {
         if (place.place_url) {
             window.open(place.place_url, '_blank');
         } else {
             alert('상세보기 URL이 제공되지 않는 장소입니다.');
         }
-    };
+    }, []);
 
-    // '장소 추가' 버튼 클릭 시
-    const handleAddPlace = (place) => {
+    // [useCallback 적용]
+    const handleAddPlace = useCallback((place) => {
         alert(`'${place.place_name}' 장소를 추가합니다.`);
         console.log('추가할 장소:', place);
-    };
+    }, []);
 
-    // 인포윈도우 컨텐츠(DOM) 생성 함수
-    const createInfoWindowContent = (place) => {
+    // [useCallback 적용] 인포윈도우 (이름, 주소, 번호, 버튼 모두 포함)
+    // (이전 코드의 createAddressInfoWindowContent 함수는 삭제)
+    const createInfoWindowContent = useCallback((place) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'infowindow-wrap'; 
 
@@ -50,11 +54,13 @@ const Map = () => {
         const buttons = document.createElement('div');
         buttons.className = 'infowindow-buttons';
 
-        const btnDetail = document.createElement('button');
-        btnDetail.className = 'infowindow-btn btn-detail';
-        btnDetail.innerHTML = '상세보기';
-        btnDetail.onclick = () => handleShowDetail(place); 
-        buttons.appendChild(btnDetail);
+        if (place.place_url) {
+            const btnDetail = document.createElement('button');
+            btnDetail.className = 'infowindow-btn btn-detail';
+            btnDetail.innerHTML = '상세보기';
+            btnDetail.onclick = () => handleShowDetail(place); 
+            buttons.appendChild(btnDetail);
+        }
 
         const btnAdd = document.createElement('button');
         btnAdd.className = 'infowindow-btn btn-add';
@@ -62,12 +68,17 @@ const Map = () => {
         btnAdd.onclick = () => handleAddPlace(place); 
         buttons.appendChild(btnAdd);
 
+        if (!place.place_url) {
+            buttons.style.justifyContent = 'flex-end';
+        }
+
         wrapper.appendChild(buttons);
 
         return wrapper;
-    };
+    }, [handleShowDetail, handleAddPlace]);
 
 
+    // [수정] useEffect
     useEffect(() => {
         const loadKakaoMapScript = () => {
             if (window.kakao && window.kakao.maps) {
@@ -97,15 +108,80 @@ const Map = () => {
                     mapInstance.current = map;
 
                     placesService.current = new window.kakao.maps.services.Places();
+                    geocoder.current = new window.kakao.maps.services.Geocoder(); 
                     infowindow.current = new window.kakao.maps.InfoWindow({ 
                         zIndex: 1,
                         disableAutoPan: true 
                     });
 
-                    // 지도 클릭 시 인포윈도우 닫기
+                    // --- [핵심 수정] 지도 클릭 이벤트 (2단계 검색) ---
                     window.kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                        
+                        const latLng = mouseEvent.latLng; 
                         infowindow.current.close();
+                        setPlaces([]); 
+
+                        // 1단계: 좌표 -> 주소 변환
+                        geocoder.current.coord2Address(latLng.getLng(), latLng.getLat(), (result, status) => {
+                            
+                            // 1단계 실패 시
+                            if (status !== window.kakao.maps.services.Status.OK) {
+                                alert('클릭한 위치의 주소 정보를 가져올 수 없습니다.');
+                                setMarkers(current => { // 마커 클리어
+                                    current.forEach(m => m.setMap(null));
+                                    return [];
+                                });
+                                return;
+                            }
+                            
+                            // 1단계 성공 -> 주소 획득
+                            const addressName = result[0].road_address 
+                                ? result[0].road_address.address_name 
+                                : result[0].address.address_name;
+
+                            // 2단계: 주소 -> 장소 검색 (Places 서비스)
+                            placesService.current.keywordSearch(addressName, (data, status) => {
+                                
+                                // 2단계 실패 시
+                                if (status !== window.kakao.maps.services.Status.OK || data.length === 0) {
+                                    alert('클릭한 위치의 장소 정보를 찾지 못했습니다.');
+                                    setMarkers(current => { // 마커 클리어
+                                        current.forEach(m => m.setMap(null));
+                                        return [];
+                                    });
+                                    return;
+                                }
+
+                                // 2단계 성공 -> 'place' 객체 획득!
+                                const place = data[0]; 
+
+                                // 새 마커 생성
+                                const newMarker = new window.kakao.maps.Marker({
+                                    position: latLng, // 클릭한 위치에 마커 생성
+                                    map: map
+                                });
+
+                                // [수정] 'place' 객체로 '풀 버전' 인포윈도우 생성
+                                const content = createInfoWindowContent(place);
+                                infowindow.current.setContent(content);
+                                infowindow.current.open(map, newMarker);
+
+                                // 마커에 클릭 이벤트 추가
+                                window.kakao.maps.event.addListener(newMarker, 'click', function() {
+                                    infowindow.current.setContent(content);
+                                    infowindow.current.open(map, newMarker);
+                                });
+
+                                // 마커 state 업데이트
+                                setMarkers(current => {
+                                    current.forEach(m => m.setMap(null));
+                                    return [newMarker];
+                                });
+                                map.panTo(latLng);
+                            });
+                        });
                     });
+                    // ---------------------------------------------
 
                     setTimeout(() => {
                         map.relayout();
@@ -115,10 +191,11 @@ const Map = () => {
         };
 
         loadKakaoMapScript();
-    }, []); // <-- 의존성 배열은 비어있는 것이 맞습니다.
+    }, [createInfoWindowContent]); // <-- createInfoWindowContent를 의존성 배열에 추가 (ESLint 경고 및 버그 수정)
 
-    //handleSearch (마커 클릭 이벤트 핸들러 수정) ---
-    const handleSearch = (e) => {
+
+    // [useCallback 적용] handleSearch
+    const handleSearch = useCallback((e) => {
         e.preventDefault();
         if (!keyword.trim()) {
             alert('키워드를 입력해주세요.');
@@ -146,7 +223,6 @@ const Map = () => {
                         position: position,
                     });
 
-                    // --- 마커 클릭 이벤트 ---
                     window.kakao.maps.event.addListener(marker, 'click', () => {
                         
                         setMarkers(currentMarkers => {
@@ -155,6 +231,7 @@ const Map = () => {
                             return [marker]; 
                         });
                         
+                        // [수정] createInfoWindowContent 호출 (버그 수정)
                         const content = createInfoWindowContent(place);
                         infowindow.current.setContent(content);
                         infowindow.current.open(mapInstance.current, marker);
@@ -178,47 +255,41 @@ const Map = () => {
                 setPlaces([]);
             }
         });
-    };
+    }, [keyword, markers, createInfoWindowContent]); // 의존성 배열
 
-    // --- [수정됨] handlePlaceClick (검색 목록 아이템 클릭 시) ---
-    const handlePlaceClick = (place) => {
+
+    // [useCallback 적용] handlePlaceClick (검색 목록 클릭)
+    const handlePlaceClick = useCallback((place) => {
         const map = mapInstance.current;
         const position = new window.kakao.maps.LatLng(place.y, place.x);
 
-        // 1. 현재 state에 있는 모든 마커를 지도에서 즉시 제거
         markers.forEach(marker => marker.setMap(null));
 
-        // 2. 클릭한 장소에 대한 '새로운' 마커를 생성합니다.
         const newMarker = new window.kakao.maps.Marker({
             map: map,
             position: position,
         });
 
-        // 3. React state를 이 '새로운' 마커 하나만 갖도록 업데이트합니다.
         setMarkers([newMarker]);
-
-        // 4. 지도 이동 및 확대
         map.setCenter(position);
-        map.setLevel(3); // (원하시는 확대 레벨로 설정)
+        map.setLevel(4); 
 
-        // 5. '새로운' 마커에 커스텀 인포윈도우를 띄웁니다.
+        // [수정] createInfoWindowContent 호출 (버그 수정)
         const content = createInfoWindowContent(place); 
         infowindow.current.setContent(content);
         infowindow.current.open(map, newMarker);
 
-        // 6. 이 '새로운' 마커에도 '마커 클릭 이벤트'를 추가해줍니다.
         window.kakao.maps.event.addListener(newMarker, 'click', () => {
-             // 다른 마커가 없으므로, 그냥 인포윈도우만 띄웁니다.
              const content = createInfoWindowContent(place);
              infowindow.current.setContent(content);
              infowindow.current.open(map, newMarker);
              map.panTo(position);
         });
 
-        // 7. 검색 목록을 숨깁니다.
         setPlaces([]);
-    };
+    }, [markers, createInfoWindowContent]); // 의존성 배열
 
+    // JSX (반환값)
     return (
         <div className="map-search-wrapper">
             <div className="search-form-container">
