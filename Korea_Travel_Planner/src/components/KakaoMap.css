@@ -4,3 +4,178 @@
     display: inline-block;
     position: absolute;
 }
+
+/* 전체 래퍼 */
+.map-search-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 예시: 화면 전체 높이 */
+    font-family: Arial, sans-serif;
+}
+
+/* 검색 폼 */
+.search-form-container {
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+    z-index: 10;
+}
+.search-form-container form {
+    display: flex;
+}
+.search-form-container input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+}
+.search-form-container button {
+    padding: 8px 12px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+.search-form-container button:hover {
+    background-color: #0056b3;
+}
+
+/* 지도 영역 - 높이 지정이 필수입니다! */
+.map-placeholder {
+    width: 100%; /* 너비를 100%로 설정 (기존과 동일) */
+    flex-grow: 1;  /* [중요] 사이드바를 제외한 나머지 가로 공간을 모두 차지 */
+    /* [중요] 기존의 height, min-height 속성 대신 
+       부모(.main-content-area)의 높이를 따라가도록 합니다. */
+    height: 100%; 
+    min-height: 0; /* min-height 초기화 */
+}
+
+/* 검색 결과 목록 */
+.search-results-container {
+    /* 기존 height: 250px 에서 최대 높이로 변경 */
+    max-height: 250px; 
+    flex-shrink: 0; /* 크기가 줄어들지 않도록 함 */
+    overflow-y: auto;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    z-index: 10;
+}
+
+#placesList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.place-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+.place-item:hover {
+    background-color: #f9f9f9;
+}
+.place-item .info {
+    display: flex;
+    flex-direction: column;
+}
+.place-item .place-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+}
+.place-item .address {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 4px;
+}
+.place-item .tel {
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 4px;
+}
+
+
+
+/* 인포윈도우 기본 스타일 초기화 
+  (카카오맵이 기본으로 적용하는 패딩, 테두리 등을 제거)
+*/
+.infowindow-wrap {
+    padding: 12px;
+    width: 280px; /* 고정 너비 설정 */
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    line-height: 1.4;
+    border: none !important; /* !important로 카카오 기본 스타일 덮어쓰기 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    position: relative;
+    bottom: 5px; /* 마커 위에 살짝 띄우기 (필요시 조절) */
+}
+/* 카카오맵 기본 말풍선 꼬리 제거 */
+.infowindow-wrap::after {
+    display: none !important;
+}
+
+.infowindow-title {
+    font-size: 1.25em; /* 크고 */
+    font-weight: bold; /* 굵게 */
+    margin-bottom: 6px;
+    color: #222;
+}
+
+.infowindow-address {
+    margin-bottom: 4px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.infowindow-tel {
+    margin-bottom: 12px;
+    color: #888;
+    font-size: 0.9em;
+}
+
+.infowindow-buttons {
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.infowindow-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.infowindow-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.infowindow-btn.btn-detail {
+    color: #333;
+}
+
+.infowindow-btn.btn-add {
+    border-color: #007bff;
+    background-color: #007bff;
+    color: white;
+}
+.infowindow-btn.btn-add:hover {
+    background-color: #0056b3;
+}
+
+/* 카카오맵의 기본 닫기(X) 버튼이 
+  커스텀 윈도우와 잘 어울리도록 위치 조절 
+*/
+.infowindow-wrap + button {
+    top: 10px !important;
+    right: 10px !important;
+}
+
+

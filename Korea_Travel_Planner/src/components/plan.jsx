@@ -42,12 +42,11 @@ const Plan = () => {
       <div className="trip-plan-body">
         {/* 왼쪽: 지도 영역 */}
         <div className="map-area">
-          <div className="map-controls">
-            <div className="location-display">◎ 부산광역시 북구 ⌄</div>
+          {/* <div className="map-controls">
             <div className="search-bar-map">
               <input type="text" placeholder="Search place..." />
             </div>
-          </div>
+          </div> */}
           <Map />
         </div>
 
