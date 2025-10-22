@@ -54,7 +54,7 @@
 /* 검색 결과 목록 */
 .search-results-container {
     /* 기존 height: 250px 에서 최대 높이로 변경 */
-    max-height: 250px; 
+    max-height: 100%; 
     flex-shrink: 0; /* 크기가 줄어들지 않도록 함 */
     overflow-y: auto;
     background-color: #fff;
@@ -178,4 +178,30 @@
     right: 10px !important;
 }
 
+/* 숫자 마커(커스텀 오버레이) 스타일 */
+.custom-overlay-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;  /* 원 크기 */
+    height: 28px; /* 원 크기 */
+    
+    /* 핑크색 원 */
+    background-color: #E6007E;
+    border: 2px solid white;
 
+    border-radius: 50%; /* 원 모양 */
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    cursor: pointer; /* 클릭 가능하다는 표시 */
+}
+
+.custom-overlay-number:hover {
+    /* (예시) 파란색 원 호버 */
+    /* background-color: #1558b0; */
+
+    /* (예시) 핑크색 원 호버 */
+    background-color: #B30062;
+}

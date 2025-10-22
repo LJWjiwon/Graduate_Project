@@ -11,6 +11,9 @@ const Plan = () => {
   const [currentDay, setCurrentDay] = useState(1);
   const [itineraryState, setItineraryState] = useState({}); // 빈 객체로 시작
 
+  // [!!신규!!] 맵을 이동시킬 타겟 좌표 state
+  const [panTarget, setPanTarget] = useState(null);
+
   const handleDayChange = (direction) => {
     if (direction === 'prev' && currentDay > 1) {
       setCurrentDay(currentDay - 1);
@@ -25,10 +28,9 @@ const Plan = () => {
 
   const handleAddPlaceToItinerary = (place) => {
     const newItem = {
-      id: place.id,
-      name: place.place_name,
-      // [수정] time 초기값을 null 또는 빈 문자열로 설정 (선택되지 않음 표시)
-      time: null
+      ...place, // <-- 1. place 객체의 모든 속성을 복사 (id, place_name, y, x 등)
+      name: place.place_name, // 2. 'name' 속성을 'place_name'으로 통일 (선택 사항이지만 권장)
+      time: null // <-- 3. 'time' 속성 추가
     };
     const dayKey = `day${currentDay}`;
 
@@ -64,7 +66,18 @@ const Plan = () => {
     });
   };
 
+  // [!!신규!!] 일정 항목 클릭 시 맵 이동을 위한 핸들러
+  const handlePanToMap = (item) => {
+    // item에 y, x 좌표가 있는지 확인 (handleAddPlaceToItinerary에서 ...place로 복사했기 때문에 있어야 함)
+    if (item.y && item.x) {
+        setPanTarget(item); // panTarget state를 클릭한 장소 정보로 업데이트
+    } else {
+        console.error("이동할 좌표 정보가 없습니다:", item);
+    }
+  };
+
   const currentItinerary = itineraryState[`day${currentDay}`] || [];
+  // const allItineraryPlaces = Object.values(itineraryState).flat();
 
   return (
     <div className="trip-plan-container">
@@ -76,7 +89,11 @@ const Plan = () => {
 
       <div className="trip-plan-body">
         <div className="map-area">
-          <Map onAddPlace={handleAddPlaceToItinerary} />
+          <Map 
+            onAddPlace={handleAddPlaceToItinerary}
+            currentDayPlaces={currentItinerary}
+            panTarget={panTarget}
+          />
         </div>
 
         <aside className="itinerary-sidebar">
@@ -96,7 +113,10 @@ const Plan = () => {
 
             {currentItinerary.map((item, index) => (
               <React.Fragment key={item.id}>
-                <li className="itinerary-item">
+                <li 
+                  className="itinerary-item"
+                  onClick={() => handlePanToMap(item)}
+                >
                   <div className="item-content">
                     <div className="item-number">{index + 1}.</div>
                     <div className="item-details">

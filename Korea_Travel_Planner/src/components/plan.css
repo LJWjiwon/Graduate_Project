@@ -136,6 +136,7 @@ body {
   align-items: flex-start;
   padding: 1rem 0;
   border-bottom: 1px solid #f0f0f0; /* 아이템 구분선 */
+  cursor: pointer;
 }
 
 .item-content {

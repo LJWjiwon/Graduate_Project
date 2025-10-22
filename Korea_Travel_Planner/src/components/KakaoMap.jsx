@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import './KakaoMap.css'; 
 import { KAKAO_APP_KEY } from '../api/config.js';
 
-const Map = ({ onAddPlace }) => {
+const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
     const mapContainer = useRef(null);
     const mapInstance = useRef(null);
     const placesService = useRef(null);
@@ -202,6 +202,81 @@ const Map = ({ onAddPlace }) => {
 
         loadKakaoMapScript();
     }, [createInfoWindowContent]); // <-- createInfoWindowContent를 의존성 배열에 추가 (ESLint 경고 및 버그 수정)
+
+
+    // --- 2️⃣ 일정 오버레이 업데이트용 useEffect (수정된 것) ---
+    useEffect(() => {
+        // 맵 인스턴스가 준비되었는지 확인
+        if (!mapInstance.current) return;
+
+        // 1. 새로운 currentDayPlaces 배열을 기반으로 새 커스텀 오버레이를 생성합니다.
+        // (이 newItineraryOverlays는 이 함수 안에서만 쓰이는 '지역 변수'입니다.)
+        const newItineraryOverlays = currentDayPlaces.map((place, index) => {
+            
+            const position = new window.kakao.maps.LatLng(place.y, place.x);
+            
+            const content = document.createElement('div');
+            content.className = 'custom-overlay-number';
+            content.innerHTML = index + 1; 
+
+            const customOverlay = new window.kakao.maps.CustomOverlay({
+                map: mapInstance.current, // <-- 생성과 동시에 지도에 추가
+                position: position,
+                content: content,
+                yAnchor: 0.5, 
+                zIndex: 10    
+            });
+
+            // 2. 오버레이(숫자)에 클릭 이벤트 추가
+            content.onclick = () => {
+                // (선택) 다른 임시 마커/목록/인포윈도우 닫기
+                infowindow.current.close();
+                setMarkers(current => {
+                    current.forEach(m => m.setMap(null));
+                    return [];
+                });
+                setPlaces([]);
+
+                // 이 오버레이 위치에 인포윈도우 열기
+                const iwContent = createInfoWindowContent(place);
+                infowindow.current.setContent(iwContent);
+                infowindow.current.setPosition(position); 
+                infowindow.current.open(mapInstance.current);
+
+                mapInstance.current.panTo(position);
+            };
+
+            return customOverlay;
+        });
+
+        // 3. [핵심] 클린업(cleanup) 함수를 반환합니다.
+        // 이 함수는 'currentDayPlaces'가 바뀌어서 이 useEffect가 
+        // *다음에* 실행되기 직전에 먼저 실행됩니다.
+        return () => {
+            // 이전에 만들었던 오버레이(newItineraryOverlays)를 지도에서 제거합니다.
+            newItineraryOverlays.forEach(overlay => overlay.setMap(null));
+        };
+        
+    // 의존성 배열은 state가 빠졌으므로 깔끔해집니다.
+    }, [currentDayPlaces, createInfoWindowContent]);
+
+    // --- [!!신규!!] 3️⃣ panTarget prop 변경 감지 및 맵 이동용 useEffect ---
+    useEffect(() => {
+        // 맵 인스턴스가 준비되었고, panTarget이 유효한 값일 때만 실행
+        if (mapInstance.current && panTarget && panTarget.y && panTarget.x) {
+            
+            // 1. 이동할 새 LatLng 객체 생성
+            const position = new window.kakao.maps.LatLng(panTarget.y, panTarget.x);
+            
+            // 2. 지도를 부드럽게 이동 (panTo)
+            mapInstance.current.panTo(position);
+
+            // 3. (선택 사항) 맵 레벨을 확대
+            // mapInstance.current.setLevel(4);
+        }
+    
+    // 이 훅은 'panTarget' prop이 바뀔 때만 실행됩니다.
+    }, [panTarget]);
 
 
     // [useCallback 적용] handleSearch
