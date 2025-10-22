@@ -75,6 +75,7 @@ body {
   box-sizing: border-box;
 }
 
+
 /* 일정 사이드바 */
 .itinerary-sidebar {
   width: 350px;
@@ -176,4 +177,29 @@ body {
   font-size: 0.9rem;
   color: #555;
   border-bottom: 1px solid #f0f0f0; /* 아이템 구분선 */
+}
+
+
+.item-time-input {
+  /* 기본 브라우저 스타일 제거 */
+  border: none;
+  background-color: transparent;
+  padding: 2px 0; /* 약간의 여백 */
+  margin-top: 4px;
+  font-size: 0.9em; /* 기존 item-time과 유사하게 */
+  color: #666;     /* 기존 item-time과 유사하게 */
+  cursor: pointer;
+  outline: none; /* 클릭 시 테두리 제거 */
+  width: 100%; /* 너비 확보 */
+}
+
+/* 값이 없을 때 기본 텍스트 색상 (선택 사항) */
+.item-time-input:invalid {
+  color: #999; /* 약간 흐린 색상 */
+}
+
+/* 포커스 시 약간의 시각적 피드백 (선택 사항) */
+.item-time-input:focus {
+  background-color: #f0f0f0; /* 배경색 살짝 변경 */
+  border-radius: 3px;
 }

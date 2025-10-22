@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import './KakaoMap.css'; 
 import { KAKAO_APP_KEY } from '../api/config.js';
 
-const Map = () => {
+const Map = ({ onAddPlace }) => {
     const mapContainer = useRef(null);
     const mapInstance = useRef(null);
     const placesService = useRef(null);
@@ -24,11 +24,21 @@ const Map = () => {
         }
     }, []);
 
-    // [useCallback 적용]
+    // [useCallback 적용] '장소 추가' 버튼 클릭 시
     const handleAddPlace = useCallback((place) => {
-        alert(`'${place.place_name}' 장소를 추가합니다.`);
-        console.log('추가할 장소:', place);
-    }, []);
+        // alert(`'${place.place_name}' 장소를 추가합니다.`); // <-- 이 줄은 주석 처리
+        // console.log('추가할 장소:', place);
+        
+        // [수정] 부모로부터 받은 onAddPlace 함수가 있는지 확인하고 호출
+        if (onAddPlace) {
+            onAddPlace(place);
+        } else {
+            // prop이 전달되지 않았을 경우의 예외 처리
+            console.error("onAddPlace prop이 전달되지 않았습니다.");
+            alert("장소를 추가할 수 없습니다.");
+        }
+
+    }, [onAddPlace]); // <-- [수정] 의존성 배열에 onAddPlace 추가
 
     // [useCallback 적용] 인포윈도우 (이름, 주소, 번호, 버튼 모두 포함)
     // (이전 코드의 createAddressInfoWindowContent 함수는 삭제)
