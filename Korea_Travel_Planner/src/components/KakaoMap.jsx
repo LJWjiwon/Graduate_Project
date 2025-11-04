@@ -7,9 +7,17 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
     const mapInstance = useRef(null);
     const placesService = useRef(null);
     const infowindow = useRef(null);
-    
-    // [신규] Geocoder(주소 변환) 서비스를 위한 ref
+    // Geocoder(주소 변환) 서비스를 위한 ref
     const geocoder = useRef(null); 
+
+    // [!!신규!!] 1. onAddPlace prop을 저장할 ref 생성
+    // 이렇게 하면 onAddPlace prop이 변경될 때마다 ref의 .current 값이 항상 최신으로 유지됩니다.
+    const onAddPlaceRef = useRef(onAddPlace);
+
+    // [!!신규!!] 2. onAddPlace prop이 바뀔 때마다 ref의 .current 값을 업데이트
+    useEffect(() => {
+        onAddPlaceRef.current = onAddPlace;
+    }, [onAddPlace]);
 
     const [keyword, setKeyword] = useState('');
     const [places, setPlaces] = useState([]);
@@ -24,21 +32,18 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         }
     }, []);
 
-    // [useCallback 적용] '장소 추가' 버튼 클릭 시
+    // [!!수정!!] 3. '장소 추가' 버튼 클릭 시
     const handleAddPlace = useCallback((place) => {
-        // alert(`'${place.place_name}' 장소를 추가합니다.`); // <-- 이 줄은 주석 처리
-        // console.log('추가할 장소:', place);
-        
-        // [수정] 부모로부터 받은 onAddPlace 함수가 있는지 확인하고 호출
-        if (onAddPlace) {
-            onAddPlace(place);
+        // [수정] prop(onAddPlace) 대신 ref(onAddPlaceRef.current)를 호출합니다.
+        // 이렇게 하면 useCallback의 의존성 배열이 비어 있어도,
+        // 항상 최신 onAddPlace 함수를 호출할 수 있습니다.
+        if (onAddPlaceRef.current) {
+            onAddPlaceRef.current(place);
         } else {
-            // prop이 전달되지 않았을 경우의 예외 처리
-            console.error("onAddPlace prop이 전달되지 않았습니다.");
+            console.error("onAddPlace ref가 설정되지 않았습니다.");
             alert("장소를 추가할 수 없습니다.");
         }
-
-    }, [onAddPlace]); // <-- [수정] 의존성 배열에 onAddPlace 추가
+    }, []);
 
     // [useCallback 적용] 인포윈도우 (이름, 주소, 번호, 버튼 모두 포함)
     // (이전 코드의 createAddressInfoWindowContent 함수는 삭제)
