@@ -247,3 +247,32 @@ body {
   padding: 1%;
   color: #74a4f3;
 }
+
+/* --- [!!신규!!] 드래그 앤 드롭 스타일 --- */
+
+/* 1. 드래그 중인 아이템 자체의 스타일 */
+.itinerary-item.dragging {
+  opacity: 0.5;
+  background: #e0e0e0;
+  cursor: grabbing;
+}
+
+/* 2. 드롭될 위치(다른 아이템)의 스타일 */
+.itinerary-item.drop-target {
+  border-top: 3px solid #007bff;
+  position: relative;
+  z-index: 2;
+}
+
+/* 3. 일반 아이템 (드래그 가능 표시) */
+.itinerary-item {
+  cursor: grab;
+  position: relative;
+  z-index: 1;
+}
+
+/* (선택) 메모 컨테이너가 border-top을 가리지 않도록 */
+.memo-container {
+  position: relative;
+  z-index: 3;
+}

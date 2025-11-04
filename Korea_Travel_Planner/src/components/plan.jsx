@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './plan.css';
 import Map from './KakaoMap.jsx';
 
@@ -22,6 +22,12 @@ const Plan = () => {
   const [panTarget, setPanTarget] = useState(null);
   // [!!신규!!] 현재 수정 중인 메모의 ID를 저장하는 state
   const [editingMemoId, setEditingMemoId] = useState(null);
+
+  // [!!신규!!] 1. 드래그 앤 드롭을 위한 state 및 ref
+  const [draggedItemId, setDraggedItemId] = useState(null); // 현재 드래그 중인 아이템의 id
+  const [dropTargetId, setDropTargetId] = useState(null);   // 현재 드롭 대상인 아이템의 id (시각 효과용)
+  // [!!신규!!] 드롭 직후 발생하는 'click' 이벤트를 방지하기 위한 플래그
+  const justDropped = useRef(false);
 
   const handleDayChange = (direction) => {
     if (direction === 'prev' && currentDay > 1) {
@@ -108,6 +114,11 @@ const Plan = () => {
 
   // [!!신규!!] 일정 항목 클릭 시 맵 이동을 위한 핸들러
   const handlePanToMap = (item) => {
+    // [!!수정!!] 드롭 직후(justDropped.current === true)라면 지도 이동(클릭)을 무시
+    if (justDropped.current) {
+      return;
+    }
+
     // item에 y, x 좌표가 있는지 확인 (handleAddPlaceToItinerary에서 ...place로 복사했기 때문에 있어야 함)
     if (item.y && item.x) {
         setPanTarget(item); // panTarget state를 클릭한 장소 정보로 업데이트
@@ -116,7 +127,7 @@ const Plan = () => {
     }
   };
 
-  // [!!신규!!] 장소 삭제 핸들러
+  // 장소 삭제 핸들러
   const handleDeletePlace = (itemIdToDelete) => {
     const dayKey = `day${currentDay}`;
     
@@ -140,6 +151,88 @@ const Plan = () => {
       };
     });
   };
+
+  // [!!신규!!] 2. 드래그 앤 드롭 이벤트 핸들러 
+  
+  // 드래그 시작
+  const handleDragStart = (e, item) => {
+    setDraggedItemId(item.id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.id);
+  };
+
+  // 드래그 아이템이 다른 아이템 위에 올라갔을 때
+  const handleDragOver = (e) => {
+    e.preventDefault(); // 필수: 'drop' 이벤트를 허용하기 위해
+  };
+
+  // 드래그 아이템이 드롭 대상 영역에 들어왔을 때 (시각 효과용)
+  const handleDragEnter = (e, targetId) => {
+    e.preventDefault();
+    if (draggedItemId !== targetId) {
+      setDropTargetId(targetId);
+    }
+  };
+
+  // 드래그 아이템이 드롭 대상 영역에서 나갔을 때 (시각 효과용)
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDropTargetId(null);
+  };
+
+  // 드롭 (순서 변경 로직)
+  const handleDrop = (e, targetItem) => {
+    e.preventDefault();
+    justDropped.current = true; // [!!중요!!] 클릭 방지 플래그 ON
+
+    const dayKey = `day${currentDay}`;
+    const currentList = itineraryState[dayKey].places;
+    const draggedId = draggedItemId; // 드래그 중인 아이템 ID (state에서 가져옴)
+    const targetId = targetItem.id;  // 드롭된 위치의 아이템 ID
+
+    // 1. 자기 자신 위에 드롭한 경우
+    if (draggedId === targetId) {
+      setDraggedItemId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    // 2. 드래그된 아이템 찾기
+    const draggedItem = currentList.find(item => item.id === draggedId);
+    if (!draggedItem) return; // 예외 처리
+
+    // 3. 드래그된 아이템을 "제외한" 새 배열 생성
+    const remainingItems = currentList.filter(item => item.id !== draggedId);
+
+    // 4. 드롭된 위치(target)의 인덱스를 새 배열에서 찾기
+    const newTargetIndex = remainingItems.findIndex(item => item.id === targetId);
+
+    // 5. 드롭된 위치에 드래그된 아이템 삽입
+    // (예: [A, C, D]가 remainingItems이고, target이 'C'(index 1)면, [A, 'B', C, D]가 됨)
+    remainingItems.splice(newTargetIndex, 0, draggedItem);
+
+    // 6. State 업데이트
+    setItineraryState(prevState => ({
+      ...prevState,
+      [dayKey]: { places: remainingItems }
+    }));
+
+    // 7. 드래그 상태 초기화
+    setDraggedItemId(null);
+    setDropTargetId(null);
+  };
+
+  // 드래그가 (성공/취소) 종료됐을 때
+  const handleDragEnd = () => {
+    setDraggedItemId(null);
+    setDropTargetId(null);
+    
+    // [!!중요!!] 클릭 방지 플래그를 아주 잠깐 뒤에 해제
+    // (drop -> dragend -> click 순서로 이벤트가 발생하기 때문)
+    setTimeout(() => {
+      justDropped.current = false;
+    }, 50); // 50ms 딜레이
+  };
 
 // [!!수정!!] 1. state에서 장소 목록 가져오기
   const dayKey = `day${currentDay}`;
@@ -221,8 +314,17 @@ const Plan = () => {
             {currentItinerary.map((item, index) => (
               <React.Fragment key={item.id}>
                 <li 
-                  className="itinerary-item"
-                  onClick={() => handlePanToMap(item)}
+                  className={`itinerary-item ${item.id === draggedItemId ? 'dragging' : ''} ${item.id === dropTargetId ? 'drop-target' : ''}`}
+                  onClick={() => handlePanToMap(item)}
+
+// --- [!!신규!!] 드래그 앤 드롭 속성 추가 ---
+                  draggable={true} // (1) 드래그 가능하도록 설정
+                  onDragStart={(e) => handleDragStart(e, item)} // (2)
+                  onDragOver={handleDragOver}                // (3)
+                  onDrop={(e) => handleDrop(e, item)}       // (4)
+                  onDragEnd={handleDragEnd}                   // (5)
+                  onDragEnter={(e) => handleDragEnter(e, item.id)} // (6)
+                  onDragLeave={handleDragLeave}               // (7)
                 >
                   <div className="item-content">
                     <div className="item-number">{index + 1}.</div>
