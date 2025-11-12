@@ -37,38 +37,6 @@ body {
   padding: 1.5rem;
 }
 
-.add-schedule-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
-  padding-bottom: 1.5rem;
-}
-
-.add-schedule-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: transparent;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #495057;
-  cursor: pointer;
-}
-
-.add-icon {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  line-height: 22px;
-  text-align: center;
-  border: 2px solid #adb5bd;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  color: #adb5bd;
-}
-
 /* 일정 목록 */
 .schedule-list {
   display: flex;

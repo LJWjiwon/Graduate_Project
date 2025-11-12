@@ -1,5 +1,6 @@
 import React from 'react';
 import './home.css';
+import Footer from './footer.jsx';
 
 // 아이콘을 간단한 컴포넌트로 만듭니다. 실제 프로젝트에서는 SVG 아이콘 라이브러리를 사용하는 것이 좋습니다.
 const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}</div>;
@@ -46,6 +47,7 @@ const Home = () => {
           <Icon name="user-icon">👤</Icon>
         </div>
       </header>
+      
 
       <section className="hero-image-placeholder"></section>
 
@@ -73,17 +75,7 @@ const Home = () => {
           </div>
         </section>
       </main>
-
-      <footer className="floating-buttons">
-        <button className="fab">
-          <Icon name="add-icon">+</Icon>
-          <span>일정 추가</span>
-        </button>
-        <button className="fab">
-          <Icon name="add-icon">+</Icon>
-          <span>일정 관리</span>
-        </button>
-      </footer>
+      <Footer />
     </div>
   );
 };

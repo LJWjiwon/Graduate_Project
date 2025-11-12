@@ -9,7 +9,7 @@ const Footer = () => {
           <span>일정 추가</span>
         </button>
         <button className="fab-detail">
-          <span className="fab-icon">+</span>
+          <span className="fab-icon">📆</span>
           <span>일정 관리</span>
         </button>
       </footer>

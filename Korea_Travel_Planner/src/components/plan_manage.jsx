@@ -47,13 +47,6 @@ const Manage = () => {
       </Header> 
       
       <main className="schedule-main">
-        <div className="add-schedule-wrapper">
-            <button className="add-schedule-button">
-                <span className="add-icon">+</span>
-                일정 추가
-            </button>
-        </div>
-        
         <div className="schedule-list">
           {scheduleData.map(item => (
             <ScheduleItem 
