@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './home.css';
 import Footer from './footer.jsx';
 import Plan_add from './plan_add.jsx';
@@ -29,6 +30,9 @@ const Home = () => {
   // 모달을 켜고 끄는 state를 추가합니다.
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Home 컴포넌트 최상단에서 useNavigate를 호출합니다.
+  const navigate = useNavigate();
+
   // 예시 데이터
   const topDestinations = [
     { id: 1, title: '부산 씨라이프 아쿠아리움' },
@@ -55,6 +59,9 @@ const Home = () => {
       return; 
     }
 
+    // ⭐️ 새로 생성될 Plan의 문서 참조 (ID를 미리 가져옴)
+    const newPlanRef = doc(collection(db, "plans"));
+
     try {
       // 5. 모달에서 받은 데이터 (문자열)를 Firebase 형식으로 변환
       const { planName, startDate, duration } = data;
@@ -65,10 +72,6 @@ const Home = () => {
 
       // 6. 배치(batch) 쓰기 시작 (여러 문서를 한 번에 쓰기 위함)
       const batch = writeBatch(db);
-
-      // 7. (배치 1) 새 Plan 문서 생성 (ID는 자동 생성)
-      // '/plans' 컬렉션에 대한 참조
-      const newPlanRef = doc(collection(db, "plans")); 
 
       const planData = {
         name: planName,
@@ -101,7 +104,9 @@ const Home = () => {
       await batch.commit();
 
       alert("새 여행 일정이 생성되었습니다!");
-      console.log("새 일정 생성 완료! ID:", newPlanRef.id);
+      // 7. 👈 성공 직후, navigate 함수를 호출하여 페이지 이동!
+      // newPlanRef.id 를 URL 파라미터로 넘겨줍니다.
+      navigate(`/plan/${newPlanRef.id}`);
 
     } catch (error) {
       console.error("일정 생성 중 오류 발생:", error);
