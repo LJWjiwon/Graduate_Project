@@ -1,11 +1,11 @@
 // App.jsx: 페이지 라우팅
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './components/home.jsx'; // 공통 헤더
-import Login from './components/login.jsx'; 
-import Info from './components/info.jsx'; 
-import Search from './components/search.jsx'; 
-import Plan from './components/plan.jsx'; 
-import Manage from './components/plan_manage.jsx'; 
+import Login from './components/login.jsx';
+import Info from './components/info.jsx';
+import Search from './components/search.jsx';
+import Plan from './components/plan.jsx';
+import Manage from './components/plan_manage.jsx';
 
 // import './styles/global.css'; // 전역 스타일
 
@@ -21,10 +21,10 @@ function App() {
         <Routes>
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Login />} />
+          <Route path="/plan" element={<Plan />} />
         </Routes>
         {/* <Info /> */}
         {/* <Search /> */}
-        {/* <Plan /> */}
         {/* <Manage /> */}
 
       </main>

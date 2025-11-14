@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './home.css';
 import Footer from './footer.jsx';
+import Plan_add from './plan_add.jsx';
 
 // 아이콘을 간단한 컴포넌트로 만듭니다. 실제 프로젝트에서는 SVG 아이콘 라이브러리를 사용하는 것이 좋습니다.
 const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}</div>;
@@ -16,6 +17,10 @@ const TravelCard = ({ rank, title }) => (
 
 // 메인 페이지 컴포넌트
 const Home = () => {
+
+  // 모달을 켜고 끄는 state를 추가합니다.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // 예시 데이터
   const topDestinations = [
     { id: 1, title: '부산 씨라이프 아쿠아리움' },
@@ -30,6 +35,12 @@ const Home = () => {
     { id: 3, title: '부산 씨라이프 아쿠아리움' },
     { id: 4, title: '부산 씨라이프 아쿠아리움' },
   ];
+
+  // 4. 모달에서 '확인'을 눌렀을 때 실행될 함수를 정의합니다.
+  const handleCreatePlan = (data) => {
+    console.log('새 일정 데이터 (from Home):', data);
+    // TODO: 여기에 Firebase 데이터베이스에 저장하는 로직을 추가합니다.
+  };
 
   return (
     <div className="container">
@@ -47,7 +58,7 @@ const Home = () => {
           <Icon name="user-icon">👤</Icon>
         </div>
       </header>
-      
+
 
       <section className="hero-image-placeholder"></section>
 
@@ -75,7 +86,13 @@ const Home = () => {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer onOpenModalClick={() => setIsModalOpen(true)} />
+
+      <Plan_add
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreatePlan}
+      />
     </div>
   );
 };
