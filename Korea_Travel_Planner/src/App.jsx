@@ -22,10 +22,10 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Login />} />
           <Route path="/plan" element={<Plan />} />
+          <Route path="/manage" element={<Manage />} />
         </Routes>
         {/* <Info /> */}
         {/* <Search /> */}
-        {/* <Manage /> */}
 
       </main>
 
