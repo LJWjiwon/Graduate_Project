@@ -1,19 +1,28 @@
 //(연결 설정) 이 파일은 프로젝트 전체에서 단 하나만 존재. db와 auth를 내보냅니다.
 //api 폴더에 '기능별' 또는 '데이터 모델별'로 파일을 만듭니다.(게시물 관련 기능, 댓글 관련 기능 등)
+//파이어베이스 버전 10
 
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // Firestore 데이터베이스
-import { getAuth } from "firebase/auth";       // Firebase 인증
-// import { getStorage } from "firebase/storage"; // Firebase 스토리지 (필요시)
+import firebase from 'firebase/compat/app'; // v9+ 모듈러 방식 대신 compat/app 임포트
+import 'firebase/compat/auth';         // Auth 호환성 모듈
+import 'firebase/compat/firestore';  // Firestore 호환성 모듈
 
 import { firebaseConfig } from './api/firebaseConfig';
 
-// Firebase 앱 초기화
-const app = initializeApp(firebaseConfig);
+// 2. Firebase 앱 초기화 (중복 방지 코드 포함)
+let app;
+if (!firebase.apps.length) {
+  app = firebase.initializeApp(firebaseConfig);
+} else {
+  app = firebase.app(); // 이미 초기화된 경우
+}
 
-// Firebase 서비스 내보내기
-export const db = getFirestore(app);       // Firestore 인스턴스
-export const auth = getAuth(app);          // Auth 인스턴스
-// export const storage = getStorage(app); // Storage 인스턴스 (필요시)
+// 3. 'compat' 방식으로 각 서비스를 가져와서 내보냅니다.
+// (getFirestore(app) 대신 firebase.firestore())
+export const db = firebase.firestore(); 
+  
+// (getAuth(app) 대신 firebase.auth())
+export const auth = firebase.auth(); 
 
-export default app; // Firebase 앱 자체를 내보낼 수도 있습니다.
+// 4. 'FirebaseLogin.js'에서 (GoogleAuthProvider 등)을 사용하기 위해
+// firebase 객체 자체를 default로 내보냅니다.
+export default firebase;
