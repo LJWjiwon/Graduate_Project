@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-// 1. firebase.js에서 compat auth 객체와 firebase 자체를 가져옴
-import firebase, { auth } from '../firebase'; 
+import firebase, { auth, db } from '../firebase'; 
 import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
 import './login.css'; 
@@ -10,38 +9,81 @@ const Login = () => {
   const uiInstanceRef = useRef(null);
 
   useEffect(() => {
-    if (uiInstanceRef.current) {
-      return;
-    }
-    
+
+    console.log('--- Login.js useEffect가 실행되었습니다. ---');
+
+    if (uiInstanceRef.current) { return; }
     uiInstanceRef.current = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(auth);
 
     const uiConfig = {
-      signInSuccessUrl: '/',
+      // 1. signInSuccessUrl을 제거하여 수동 리디렉션 모드로 둡니다.
+      // signInSuccessUrl: '/home', 
       
-      // 2. 인증 공급자(Provider)를 compat 방식으로 변경
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.EmailAuthProvider.PROVIDER_ID,
         firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
       ],
-      signInFlow: 'redirect', //창 전체를 로그인 화면 띄우게
+      signInFlow: 'popup', 
       autoUpgradeAnonymousUsers: true,
 
       callbacks: {
-        signInFailure: function(error) {
-      // 'autoUpgradeAnonymousUsers' 사용 시 발생하는
-      // 계정 충돌(merge conflict) 에러 처리
-          if (error.code === 'firebaseui/anonymous-upgrade-merge-conflict') {
-            alert('이 구글 계정은 이미 다른 계정에 연결되어 있습니다. 다른 계정으로 로그인해주세요.');
-          } else {
-        // 기타 다른 에러들
-            console.error('로그인 실패:', error);
+        signInSuccessWithAuthResult: async function(authResult, redirectUrl) {
+          console.log('로그인 성공! authResult:', authResult);
+          const user = authResult.user;
+          const isNewUserAuthFlag = authResult.additionalUserInfo.isNewUser;
+          
+          const userDocRef = db.collection('users').doc(user.uid);
+
+          try {
+            const docSnap = await userDocRef.get();
+
+            // --- (⭐⭐⭐ 최종 로직 수정 ⭐⭐⭐) ---
+            // 'docSnap.exists' 대신, 'docSnap.data()'에 'createdAt' 필드가 있는지
+            // (즉, 정상적으로 저장된 데이터가 있는지) 확인합니다.
+            // '?'(Optional Chaining)는 docSnap.data()가 null일 때 오류를 방지합니다.
+            const docHasData = !!docSnap.data()?.createdAt;
+
+            // 1. Auth가 새 유저라고 하거나 (isNewUserAuthFlag = true)
+            // 2. '유령 계정'(DB 문서 없음)이거나 (docHasData = false)
+            // 3. '텅 빈 껍데기' 계정이면 (docHasData = false)
+            if (isNewUserAuthFlag || !docHasData) {
+            // --- (⭐⭐⭐ ------------------- ⭐⭐⭐) ---
+              
+              console.log('Auth 신규, 또는 DB 데이터가 없어 저장을 시도합니다.');
+              
+              const userData = {
+                uid: user.uid,
+                email: user.email, 
+                name: user.displayName, 
+                provider: authResult.additionalUserInfo.providerId,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              };
+              
+              // set()은 덮어쓰기이므로, '텅 빈 껍데기'에도 안전합니다.
+              await userDocRef.set(userData); 
+              console.log("Firestore에 새 유저 정보 저장/덮어쓰기 완료");
+
+            } else {
+              console.log('Auth/DB 모두에 등록된 정상 유저입니다. 저장을 건너뜁니다.');
+            }
+
+            // 수동 리디렉션
+            window.location.href = '/home'; 
+
+          } catch (error) {
+            console.error("Firestore DB 작업 실패 (get 또는 set): ", error);
+            return false; 
           }
-      // 에러를 처리했으므로 false를 반환 (리디렉션 방지)
-      return false;
+          
+          return false; // 항상 false 반환
+        },
+
+        signInFailure: function(error) {
+          console.error('로그인 실패 (Failure Callback):', error);
+          return Promise.resolve(false);
+        }
       }
-  }
     };
 
     if (uiContainerRef.current) {
@@ -54,10 +96,12 @@ const Login = () => {
         uiInstanceRef.current = null;
       }
     };
-  }, []); // 'auth'를 의존성 배열에서 제거 (firebase.auth()는 안정적임)
+  }, []);
+
+
 
   return (
-    <div className='content'>
+    <div className='loginTitle'>
       <h2>국내 여행 루트 플래너 (Korea Travel Route Planner)</h2>
       <div className='loginContent'>
         <h3>로그인 / 회원가입</h3>

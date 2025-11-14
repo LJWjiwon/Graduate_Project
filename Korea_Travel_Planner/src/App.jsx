@@ -18,9 +18,10 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Routes> */}
-
-        {/* <Home /> */}
-        <Login />
+        <Routes>
+          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Login />} />
+        </Routes>
         {/* <Info /> */}
         {/* <Search /> */}
         {/* <Plan /> */}
