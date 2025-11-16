@@ -7,7 +7,10 @@ import Header from './header.jsx';
 import { useNavigate } from 'react-router-dom';
 
 import { db } from '../firebase.js';
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import {
+  doc, getDoc, collection, getDocs,
+  writeBatch, Timestamp, setDoc // <--- 수정/추가
+} from "firebase/firestore";
 
 // 아이콘을 위한 간단한 컴포넌트
 const Icon = ({ className, children, onClick }) => (
@@ -92,10 +95,12 @@ const Plan = () => {
           const dayData = dayDoc.data();
           const dayKey = `day${dayData.dayNumber}`;
 
-          // (요청 3)
-          // Home.jsx에서 'places' 배열을 만들지 않았으므로,
-          // 여기서 빈 배열로 초기화해줍니다.
-          initialItinerary[dayKey] = { places: [] };
+          initialItinerary[dayKey] = {
+            // (1) Firestore에 저장된 places 배열이 있으면 가져오고, 없으면 빈 배열
+            places: dayData.places || [],
+            // (2) '저장' 버튼이 사용할 Day 문서의 실제 ID
+            docId: dayDoc.id
+          };
         });
 
         // 4. State 업데이트 (duration만큼 생성된 itineraryState)
@@ -107,7 +112,7 @@ const Plan = () => {
           //  혹시 모를 상황을 대비해 planData.duration 기준으로도 생성)
           const fallbackItinerary = {};
           for (let i = 1; i <= planData.duration; i++) {
-            fallbackItinerary[`day${i}`] = { places: [] };
+            fallbackItinerary[`day${i}`] = { places: [], docId: null };
           }
           setItineraryState(fallbackItinerary);
         }
@@ -157,7 +162,7 @@ const Plan = () => {
 
     setItineraryState(prevState => {
       // [!!수정!!] state 업데이트 로직 (단순화)
-      const currentDayData = prevState[dayKey] || { places: [] };
+      const currentDayData = prevState[dayKey] || { places: [], docId: null };
       const currentDayList = currentDayData.places;
 
       if (currentDayList.some(item => item.id === newItem.id)) {
@@ -168,7 +173,7 @@ const Plan = () => {
 
       return {
         ...prevState,
-        [dayKey]: { places: newDayList } // date 속성 없이 places만 업데이트
+        [dayKey]: { ...currentDayData, places: newDayList }
       };
     });
     alert(`'${newItem.name}' 장소를 ${currentDay}일차에 추가했습니다.`);
@@ -188,13 +193,13 @@ const Plan = () => {
   const handleMemoChange = (itemId, newMemoValue) => {
     const dayKey = `day${currentDay}`;
     setItineraryState(prevState => {
-      const currentDayData = prevState[dayKey] || { places: [] };
+      const currentDayData = prevState[dayKey] || { places: [], docId: null };
       const updatedDayList = currentDayData.places.map(item =>
         item.id === itemId ? { ...item, memo: newMemoValue } : item
       );
       return {
         ...prevState,
-        [dayKey]: { places: updatedDayList }
+        [dayKey]: { ...currentDayData, places: updatedDayList }
       };
     });
   };
@@ -203,13 +208,13 @@ const Plan = () => {
   const handleTimeChange = (itemId, newTimeValue) => {
     const dayKey = `day${currentDay}`;
     setItineraryState(prevState => {
-      const currentDayData = prevState[dayKey] || { places: [] };
+      const currentDayData = prevState[dayKey] || { places: [], docId: null };
       const updatedDayList = currentDayData.places.map(item =>
         item.id === itemId ? { ...item, time: newTimeValue } : item
       );
       return {
         ...prevState,
-        [dayKey]: { places: updatedDayList }
+        [dayKey]: { ...currentDayData, places: updatedDayList }
       };
     });
   };
@@ -239,7 +244,7 @@ const Plan = () => {
 
     setItineraryState(prevState => {
       // 1. 현재 날짜의 데이터를 가져옴
-      const currentDayData = prevState[dayKey] || { places: [] };
+      const currentDayData = prevState[dayKey] || { places: [], docId: null };
 
       // 2. filter를 사용해 해당 id를 가진 항목을 "제외한" 새 배열 생성
       const updatedDayList = currentDayData.places.filter(
@@ -249,7 +254,7 @@ const Plan = () => {
       // 3. state 업데이트
       return {
         ...prevState,
-        [dayKey]: { places: updatedDayList }
+        [dayKey]: { ...currentDayData, places: updatedDayList }
       };
     });
   };
@@ -315,8 +320,9 @@ const Plan = () => {
 
     // 6. State 업데이트
     setItineraryState(prevState => ({
-      ...prevState,
-      [dayKey]: { places: remainingItems }
+      ...prevState, [dayKey]: {
+        ...prevState[dayKey], places: remainingItems
+      }
     }));
 
     // 7. 드래그 상태 초기화
@@ -336,9 +342,73 @@ const Plan = () => {
     }, 50); // 50ms 딜레이
   };
 
+  // [!!신규!!] 7. 저장 핸들러
+  const handleSavePlan = async () => {
+    // 1. 유효성 검사
+    if (!planId || !startDate) {
+      alert("일정 ID 또는 시작 날짜가 없습니다. 저장할 수 없습니다.");
+      return;
+    }
+
+    if (!window.confirm("현재 일정 내용을 저장하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      // 2. 배치(Batch) 쓰기 시작
+      const batch = writeBatch(db);
+
+      // 3. (배치 1) /plans/{planId} 문서 업데이트
+      // (수정된 planName, 1일차 startDate 업데이트)
+      const planDocRef = doc(db, "plans", planId);
+
+      // 'YYYY-MM-DD' 문자열을 다시 Date 객체 -> Timestamp로 변환
+      // (참고: Timezone 이슈를 피하려면 new Date(startDate)보다 수동 파싱이 안전)
+      const parts = startDate.split('-').map(Number);
+      const startDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+
+      batch.update(planDocRef, {
+        name: planName,
+        startDate: Timestamp.fromDate(startDateObj)
+      });
+
+      // 4. (배치 2~N) /plans/{planId}/days/{dayDocId} 문서 업데이트
+      for (const dayKey in itineraryState) {
+        const dayData = itineraryState[dayKey];
+        const dayDocId = dayData.docId; // useEffect에서 저장한 문서 ID
+
+        // docId가 있는 유효한 'day' 문서만 업데이트
+        if (dayDocId) {
+          // 저장할 장소 목록 (순수 배열)
+          const placesToSave = dayData.places;
+
+          // 해당 Day 문서 참조
+          const dayDocRef = doc(db, "plans", planId, "days", dayDocId);
+
+          // [!!중요!!]
+          // update() 대신 set(..., { merge: true }) 사용
+          // 'places' 필드가 Firestore에 없어도 오류 없이 생성/덮어쓰기
+          batch.set(dayDocRef, {
+            places: placesToSave
+          }, { merge: true });
+
+        }
+      } // end for loop
+
+      // 5. 모든 배치 작업 커밋(전송)
+      await batch.commit();
+
+      alert("일정이 성공적으로 저장되었습니다!");
+
+    } catch (error) {
+      console.error("일정 저장 중 오류 발생:", error);
+      alert("일정 저장에 실패했습니다. 콘솔을 확인해주세요.");
+    }
+  };
+
   // [!!수정!!] 1. state에서 장소 목록 가져오기
   const dayKey = `day${currentDay}`;
-  const currentDayData = itineraryState[dayKey] || { places: [] };
+  const currentDayData = itineraryState[dayKey] || { places: [], docId: null };
   const currentItinerary = currentDayData.places;
 
   // [!!신규!!] 2. 현재 일차의 날짜 계산하기
@@ -407,7 +477,7 @@ const Plan = () => {
               )}
               <button onClick={() => handleDayChange('next')} disabled={currentDay === planDuration}>&gt;</button>
             </div>
-            <button className="save-button">저장</button>
+            <button className="save-button" onClick={handleSavePlan}>저장</button>
           </div>
 
           <ul className="itinerary-list">
