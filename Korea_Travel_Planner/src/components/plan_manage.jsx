@@ -1,6 +1,7 @@
 import React from 'react';
 import './plan_manage.css';
 import Header from './header.jsx';
+import { useNavigate } from 'react-router-dom';
 
 // 예시 데이터 배열
 const scheduleData = [
@@ -36,10 +37,12 @@ const ScheduleItem = ({ title, dateRange, duration }) => {
 
 
 const Manage = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="schedule-container">
       <Header
-        left = {<button className="header-button icon-back">
+        left = {<button className="header-button icon-back" onClick={() => navigate('/home')}>
           {'<'}
         </button>}
         center  = {<h3>일정 관리</h3>}

@@ -1,8 +1,13 @@
-/* eslint-disable no-irregular-whitespace */
-import React, { useState, useRef } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './plan.css';
 import Map from './KakaoMap.jsx';
+import Header from './header.jsx';
+import { useNavigate } from 'react-router-dom';
+
+import { db } from '../firebase.js';
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 // 아이콘을 위한 간단한 컴포넌트
 const Icon = ({ className, children, onClick }) => (
@@ -13,12 +18,16 @@ const Icon = ({ className, children, onClick }) => (
 
 // [수정] 샘플 데이터 제거 -> 빈 객체 {} 로 시작
 const Plan = () => {
+  const navigate = useNavigate();
+
   // 1. URL의 파라미터(:planId) 값을 가져옵니다.
   const { planId } = useParams();
 
   // 2. 이 planId를 사용해 Firestore에서
   // /plans/{planId} 문서를 불러오는 로직을 추가하면 됩니다.
 
+  const [planName, setPlanName] = useState('일정 계획'); // (요청 1) 헤더용
+  const [planDuration, setPlanDuration] = useState(1); // (요청 3) '다음' 버튼 비활성화용
 
   const [currentDay, setCurrentDay] = useState(1);
   // [!!신규!!] 1일차 날짜를 별도 state로 관리
@@ -37,12 +46,97 @@ const Plan = () => {
   // [!!신규!!] 드롭 직후 발생하는 'click' 이벤트를 방지하기 위한 플래그
   const justDropped = useRef(false);
 
+  // [!!신규!!] 4. Firestore 데이터 로딩을 위한 useEffect
+  useEffect(() => {
+    // planId가 없으면 로직을 실행하지 않음
+    if (!planId) return;
+
+    const fetchPlanData = async () => {
+      try {
+        // 1. Plan 기본 정보 가져오기 (/plans/{planId})
+        const planDocRef = doc(db, "plans", planId);
+        const planDocSnap = await getDoc(planDocRef);
+
+        if (!planDocSnap.exists()) {
+          console.error("해당하는 일정이 없습니다.");
+          alert("일정을 찾을 수 없습니다.");
+          navigate('/home'); // Home.jsx로 이동
+          return;
+        }
+
+        const planData = planDocSnap.data();
+
+        // 2. State에 기본 정보 반영
+        setPlanName(planData.name); // (요청 1) 헤더 텍스트 변경
+        setPlanDuration(planData.duration); // (요청 3) 전체 기간 설정
+
+        // (요청 2) Firestore Timestamp를 'YYYY-MM-DD' 문자열로 변환
+        if (planData.startDate) {
+          const firestoreDate = planData.startDate.toDate();
+          const year = firestoreDate.getFullYear();
+          const month = String(firestoreDate.getMonth() + 1).padStart(2, '0');
+          const day = String(firestoreDate.getDate()).padStart(2, '0');
+          const dateString = `${year}-${month}-${day}`;
+          setStartDate(dateString); // 시작 날짜 설정
+        }
+
+        // 3. 'days' 하위 컬렉션 데이터 가져오기 (Home.jsx가 생성한)
+        const daysCollectionRef = collection(db, "plans", planId, "days");
+        const daysQuerySnap = await getDocs(daysCollectionRef);
+
+        const initialItinerary = {};
+        let hasDays = false;
+
+        daysQuerySnap.forEach(dayDoc => {
+          hasDays = true;
+          const dayData = dayDoc.data();
+          const dayKey = `day${dayData.dayNumber}`;
+
+          // (요청 3)
+          // Home.jsx에서 'places' 배열을 만들지 않았으므로,
+          // 여기서 빈 배열로 초기화해줍니다.
+          initialItinerary[dayKey] = { places: [] };
+        });
+
+        // 4. State 업데이트 (duration만큼 생성된 itineraryState)
+        if (hasDays) {
+          setItineraryState(initialItinerary);
+        } else {
+          // (Fallback) Home.jsx가 day 문서를 안 만들었을 경우 대비
+          // (현재 Home.jsx 코드상으로는 이 로직이 필요 없지만, 
+          //  혹시 모를 상황을 대비해 planData.duration 기준으로도 생성)
+          const fallbackItinerary = {};
+          for (let i = 1; i <= planData.duration; i++) {
+            fallbackItinerary[`day${i}`] = { places: [] };
+          }
+          setItineraryState(fallbackItinerary);
+        }
+
+        // (참고)
+        // 나중에 '저장' 기능을 만드실 때,
+        // 각 'day' 문서의 'places' 하위 컬렉션에서 장소 목록을 
+        // 불러와서 'places: [...]' 배열을 채워야 합니다.
+        // 지금은 '새로 생성된' 일정을 불러오는 것이므로 'places: []'가 맞습니다.
+
+      } catch (error) {
+        console.error("일정 데이터 로드 중 오류 발생:", error);
+        alert("일정 로딩에 실패했습니다.");
+      }
+    };
+
+    fetchPlanData();
+
+  }, [planId, navigate]); // planId가 변경되면(즉, 페이지가 로드되면) 실행
+
   const handleDayChange = (direction) => {
     if (direction === 'prev' && currentDay > 1) {
       setCurrentDay(currentDay - 1);
-    } else if (direction === 'next') {
+      // (이전) } else if (direction === 'next') {
+    } else if (direction === 'next' && currentDay < planDuration) { // (수정) (요청 3)
       const nextDayKey = `day${currentDay + 1}`;
       if (!itineraryState[nextDayKey]) {
+        // (참고: useEffect에서 이미 duration만큼 생성했으므로, 
+        // 이 로직은 사실상 필요 없지만 안전장치로 둡니다.)
         setItineraryState(prev => ({
           ...prev,
           [nextDayKey]: { places: [] }
@@ -272,11 +366,13 @@ const Plan = () => {
 
   return (
     <div className="trip-plan-container">
-      <header className="trip-plan-header">
-        <Icon className="header-icon back-arrow">{'<'}</Icon>
-        <h2>부산 반려동물 여행 계획</h2>
-        <Icon className="header-icon user-profile">👤</Icon>
-      </header>
+      <Header
+        left={<button className="header-button icon-back" onClick={() => navigate('/home')}>
+          {'<'}
+        </button>}
+        center={<h3>{planName}</h3>}
+      >
+      </Header>
 
       <div className="trip-plan-body">
         <div className="map-area">
@@ -309,7 +405,7 @@ const Plan = () => {
                   disabled // 수정 불가능하도록 설정
                 />
               )}
-              <button onClick={() => handleDayChange('next')}>&gt;</button>
+              <button onClick={() => handleDayChange('next')} disabled={currentDay === planDuration}>&gt;</button>
             </div>
             <button className="save-button">저장</button>
           </div>
