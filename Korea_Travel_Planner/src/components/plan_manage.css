@@ -50,6 +50,7 @@ body {
   align-items: center;
   padding: 1.5rem 0.5rem;
   border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
 }
 
 .schedule-info {
