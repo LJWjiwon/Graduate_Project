@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import './plan_add.css'; // 모달 전용 CSS를 사용 (아래 3번에서 생성)
+import React, { useState, useEffect } from 'react';
+import './plan_add.css';
 
 /**
  * 새 일정 생성 모달 컴포넌트
@@ -7,99 +7,116 @@ import './plan_add.css'; // 모달 전용 CSS를 사용 (아래 3번에서 생�
  * @param {boolean} props.isOpen - 모달이 열려있는지 여부 (필수)
  * @param {function} props.onClose - 닫기 버튼을 누를 때 호출될 함수 (필수)
  * @param {function} props.onSubmit - 확인 버튼을 누를 때 호출될 함수 (data 객체 전달) (필수)
+ * @param {object | null} [props.initialData] - (선택) 수정 모드일 때 사용할 초기 데이터 { name, startDate, duration }
  */
-function CreatePlanModal({ isOpen, onClose, onSubmit }) {
+function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
   const [planName, setPlanName] = useState('');
   const [startDate, setStartDate] = useState('');
-  const [duration, setDuration] = useState(1); // 기본값 1일
+  const [duration, setDuration] = useState(1);
 
-  // 폼의 상태를 초기화하는 함수를 분리합니다 (선택사항이지만 깔끔합니다)
+  // [!!신규!!] 3. 수정 모드/생성 모드 판별
+  const isEditMode = !!initialData;
+
   const resetForm = () => {
     setPlanName('');
     setStartDate('');
     setDuration(1);
   };
 
-  // 확인 버튼 클릭 시
+  // [!!신규!!] 4. 모달이 열릴 때 initialData로 폼 채우기
+  useEffect(() => {
+    // 모달이 열릴 때
+    if (isOpen) {
+      if (isEditMode) {
+        // "수정 모드"면 initialData로 state 설정
+        setPlanName(initialData.name || '');
+        setStartDate(initialData.startDate || '');
+        setDuration(initialData.duration || 1);
+      } else {
+        // "생성 모드"면 폼 초기화
+        resetForm();
+      }
+    }
+  }, [isOpen, initialData, isEditMode]); // isOpen, initialData가 바뀔 때마다 실행
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!planName || !startDate) {
       alert('일정 이름과 시작일을 모두 입력해주세요.');
       return;
     }
-    onSubmit({ planName, startDate, duration });
-    resetForm(); // 폼 초기화
-    onClose();   // 모달 닫기
+    // [!!수정!!] 5. duration도 객체에 포함 (이전 코드에서 누락된 것 같아 추가합니다)
+    onSubmit({ planName, startDate, duration: Number(duration) });
+    // (참고: resetForm()과 onClose()는 Home.jsx의 핸들러에서 이미 호출하고 있으므로
+    // 여기서 호출하지 않아도 되지만, 안전을 위해 남겨둡니다.)
+    resetForm();
+    onClose();
   };
 
-  // 1. '취소' 버튼 클릭 시 실행할 함수를 새로 만듭니다.
   const handleCancel = () => {
-    resetForm(); // 폼 초기화
-    onClose();   // 모달 닫기
+    resetForm();
+    onClose();
   };
 
-  // 모달이 열려있지 않으면 아무것도 렌더링하지 않음 (null 반환)
   if (!isOpen) {
     return null;
   }
 
-  // 모달이 열려있으면 렌더링
   return (
-    // 모달 뒷배경 (Overlay)
     <div className="modal-overlay">
-      {/* 모달 창 (이벤트 버블링 방지) */}
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3>새 여행 일정 만들기</h3>
+
+        {/* [!!수정!!] 6. 모드에 따라 제목 변경 */}
+        <h3>{isEditMode ? '일정 수정' : '새 여행 일정 만들기'}</h3>
 
         <form onSubmit={handleSubmit}>
-          {/* 일정 이름 */}
+          {/* ... (planName, startDate, duration input 필드는 동일) ... */}
           <div className="form-group">
             <label htmlFor="planName">일정 이름</label>
             <input
               id="planName"
               type="text"
               className="form-input"
-              value={planName}
+              value={planName} // (state 바인딩)
               onChange={(e) => setPlanName(e.target.value)}
               placeholder="예: 3박 4일 도쿄 여행"
               required
             />
           </div>
 
-          {/* 시작일 */}
           <div className="form-group">
             <label htmlFor="startDate">시작일</label>
             <input
               id="startDate"
               type="date"
               className="form-input"
-              value={startDate}
+              value={startDate} // (state 바인딩)
               onChange={(e) => setStartDate(e.target.value)}
               required
             />
           </div>
 
-          {/* 일정 기간 */}
           <div className="form-group">
             <label htmlFor="duration">일정 기간 (일)</label>
             <input
               id="duration"
               type="number"
               className="form-input"
-              value={duration}
+              value={duration} // (state 바인딩)
               onChange={(e) => setDuration(Number(e.target.value))}
               min="1"
               required
             />
           </div>
 
-          {/* 버튼 영역 */}
           <div className="button-container">
             <button type="button" className="cancel-button" onClick={handleCancel}>
               취소
             </button>
+
+            {/* [!!수정!!] 7. 모드에 따라 버튼 텍스트 변경 */}
             <button type="submit" className="submit-button">
-              확인
+              {isEditMode ? '수정' : '확인'}
             </button>
           </div>
         </form>
