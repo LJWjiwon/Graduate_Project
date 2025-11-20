@@ -6,12 +6,12 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 1%;
+  padding-left: 1%;
+  padding-right: 1%;
   background-color: #ffffff;
   border-bottom: 1px solid #f0f0f0;
   box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
   font-family: 'Noto Sans KR', sans-serif;
-  height: 8%;
 }
 
 

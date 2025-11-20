@@ -2,8 +2,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './components/home.jsx'; // 공통 헤더
 import Login from './components/login.jsx';
-import Info from './components/info.jsx';
-import Search from './components/search.jsx';
 import Plan from './components/plan.jsx';
 import Manage from './components/plan_manage.jsx';
 
@@ -14,18 +12,12 @@ function App() {
     <BrowserRouter>
       {/* URL 경로에 따라 이 부분만 바뀜 */}
       <main>
-        {/* <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Routes> */}
         <Routes>
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Login />} />
           <Route path="/plan/:planId" element={<Plan />} />
           <Route path="/manage" element={<Manage />} />
         </Routes>
-        {/* <Info /> */}
-        {/* <Search /> */}
 
       </main>
 

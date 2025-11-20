@@ -1,29 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './home.css';
 import Footer from './footer.jsx';
-import Plan_add from './plan_add.jsx';
+import Header from './header.jsx';
+import Plan_add from './plan_add_modify.jsx';
 
 // 2. Firebase 관련 모듈 import
 import { db, auth } from '../firebase.js'; // 방금 만든 설정 파일
-import { 
-  collection, 
-  doc, 
-  writeBatch, 
-  Timestamp 
+import {
+  collection,
+  doc,
+  writeBatch,
+  Timestamp,
+  getDocs
 } from "firebase/firestore";
 
 // 아이콘을 간단한 컴포넌트로 만듭니다. 실제 프로젝트에서는 SVG 아이콘 라이브러리를 사용하는 것이 좋습니다.
 const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}</div>;
-
-// 여행지 카드 컴포넌트
-const TravelCard = ({ rank, title }) => (
-  <div className="travel-card">
-    <div className="card-rank">{rank}</div>
-    <div className="card-image-placeholder"></div>
-    <p className="card-title">{title}</p>
-  </div>
-);
 
 // 메인 페이지 컴포넌트
 const Home = () => {
@@ -32,21 +25,65 @@ const Home = () => {
 
   // Home 컴포넌트 최상단에서 useNavigate를 호출합니다.
   const navigate = useNavigate();
+  // [!!신규!!] 가장 가까운 일정을 저장할 state
+  const [closestPlan, setClosestPlan] = useState(null);
 
-  // 예시 데이터
-  const topDestinations = [
-    { id: 1, title: '부산 씨라이프 아쿠아리움' },
-    { id: 2, title: '부산 씨라이프 아쿠아리움' },
-    { id: 3, title: '부산 씨라이프 아쿠아리움' },
-    { id: 4, title: '부산 씨라이프 아쿠아리움' },
-  ];
+  // [!!신규!!] ⭐️ 가장 가까운 다가오는 일정을 불러오는 useEffect
+  useEffect(() => {
+    const fetchClosestPlan = async () => {
+      try {
+        const plansCollectionRef = collection(db, "plans");
+        const querySnapshot = await getDocs(plansCollectionRef);
 
-  const petFriendlyDestinations = [
-    { id: 1, title: '부산 씨라이프 아쿠아리움' },
-    { id: 2, title: '부산 씨라이프 아쿠아리움' },
-    { id: 3, title: '부산 씨라이프 아쿠아리움' },
-    { id: 4, title: '부산 씨라이프 아쿠아리움' },
-  ];
+        const today = new Date();
+        // 시간을 00:00:00으로 설정하여 일(day) 기준으로 정확하게 비교
+        today.setHours(0, 0, 0, 0);
+        let minDays = Infinity;
+        let closest = null;
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+
+          // Firestore Timestamp를 JS Date 객체로 변환
+          const startDate = data.startDate.toDate();
+          startDate.setHours(0, 0, 0, 0); // 비교를 위해 시간 제거
+
+          // 오늘 또는 미래의 일정만 계산 (D-day는 0일로 표시되도록)
+          if (startDate >= today) {
+            // 시작일과 오늘 날짜의 차이 (밀리초)
+            const diffTime = startDate.getTime() - today.getTime();
+            // 일(day)로 변환하고 올림 (D-day가 0으로 나오도록)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < minDays) {
+              minDays = diffDays;
+              closest = {
+                id: doc.id,
+                name: data.name,
+                startDate: data.startDate.toDate(), // Date 객체로 저장
+                dDay: diffDays
+              };
+            }
+          }
+        });
+
+        setClosestPlan(closest);
+      } catch (error) {
+        console.error("가장 가까운 일정 로드 중 오류 발생:", error);
+      }
+    };
+
+    fetchClosestPlan();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
+
+  // 날짜 포맷팅 헬퍼 함수 (예: 2025.11.21)
+  const formatDate = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
 
   const handleCreatePlan = async (data) => {
     // data 에는 { planName, startDate, duration } 객체가 들어옵니다.
@@ -56,7 +93,7 @@ const Home = () => {
     // 4. 로그인이 되어있는지 확인 (ownerId를 위해 필수)
     if (!user) {
       alert("일정을 생성하려면 로그인이 필요합니다.");
-      return; 
+      return;
     }
 
     // ⭐️ 새로 생성될 Plan의 문서 참조 (ID를 미리 가져옴)
@@ -65,9 +102,9 @@ const Home = () => {
     try {
       // 5. 모달에서 받은 데이터 (문자열)를 Firebase 형식으로 변환
       const { planName, startDate, duration } = data;
-      
+
       // <input type="date"> (YYYY-MM-DD) 문자열을 JS Date 객체로 변환
-      const baseDate = new Date(startDate); 
+      const baseDate = new Date(startDate);
       const planDuration = Number(duration); // 숫자로 변환
 
       // 6. 배치(batch) 쓰기 시작 (여러 문서를 한 번에 쓰기 위함)
@@ -112,53 +149,56 @@ const Home = () => {
       console.error("일정 생성 중 오류 발생:", error);
       alert("일정 생성에 실패했습니다. 다시 시도해주세요.");
     }
-    
+
     // (성공/실패와 관계없이 모달은 Plan_add.jsx의 onSubmit에서 닫힙니다)
   };
 
   return (
     <div className="container">
-      <header className="header">
-        <div className="location-selector">
-          <Icon name="location-icon">📍</Icon>
-          <span>부산광역시 북구</span>
-          <Icon name="dropdown-arrow">▾</Icon>
-        </div>
-        <div className="search-bar">
-          <input type="text" placeholder="Search anything..." />
-          <Icon name="search-icon">🔍</Icon>
-        </div>
-        <div className="user-profile">
-          <Icon name="user-icon">👤</Icon>
-        </div>
-      </header>
+      <Header
+        left={<button className="header-button icon-back" onClick={() => navigate('/home')}>
+          {'🛫'}
+        </button>}
+        center={<h3>국내여행 루트 플래너</h3>}
+      >
+      </Header>
 
-
-      <section className="hero-image-placeholder"></section>
+      <div className="hero-section">
+        <img src="src\assets\Trip_img.png" alt="여행지 이미지" class="hero-image"></img>
+        {/* [!!신규!!] 다가오는 일정 표시 영역 */}
+        <div className="upcoming-plan-box">
+          {closestPlan ? (
+            // 다가오는 일정이 있을 경우
+            <>
+              {/* D-day 표시: 글자가 크고 강조됨 */}
+              <div className="d-day-text">
+                {closestPlan.dDay === 0 ? (
+                  <strong className="d-day-large d-day-today">D-DAY</strong>
+                ) : (
+                  <strong className="d-day-large">D-{closestPlan.dDay}</strong>
+                )}
+              </div>
+              {/* 일정 이름 (클릭하면 해당 일정으로 이동) */}
+              <p
+                className="plan-name-small"
+                onClick={() => navigate(`/plan/${closestPlan.id}`)}
+              >
+                {closestPlan.name}
+              </p>
+              {/* 날짜 표시 */}
+              <p className="plan-date-small">
+                {formatDate(closestPlan.startDate)} 시작
+              </p>
+            </>
+          ) : (
+            // 다가오는 일정이 없을 경우
+            <p className="no-plan-message">다가오는 일정이 없습니다.</p>
+          )}
+        </div>
+      </div>
 
       <main className="content-area">
-        <section className="destination-section">
-          <div className="section-header">
-            <h2>부산 TOP 50 여행지</h2>
-            <Icon name="filter-icon">🎚️</Icon>
-          </div>
-          <div className="card-list">
-            {topDestinations.map(dest => (
-              <TravelCard key={dest.id} rank={dest.id} title={dest.title} />
-            ))}
-          </div>
-        </section>
 
-        <section className="destination-section">
-          <div className="section-header">
-            <h2>반려동물 동반 여행지</h2>
-          </div>
-          <div className="card-list">
-            {petFriendlyDestinations.map(dest => (
-              <TravelCard key={dest.id} rank={dest.id} title={dest.title} />
-            ))}
-          </div>
-        </section>
       </main>
       <Footer onOpenModalClick={() => setIsModalOpen(true)} />
 

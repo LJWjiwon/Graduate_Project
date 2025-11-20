@@ -9,7 +9,7 @@ import {
   doc, writeBatch, Timestamp
 } from "firebase/firestore";
 
-import CreatePlanModal from './plan_add.jsx';
+import CreatePlanModal from './plan_add_modify.jsx';
 
 const ScheduleItem = ({ title, dateRange, duration, onClick, onDelete, onEdit }) => {
   return (

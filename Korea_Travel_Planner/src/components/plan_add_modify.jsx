@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './plan_add.css';
+import './plan_add_modify.css';
 
 /**
  * 새 일정 생성 모달 컴포넌트
