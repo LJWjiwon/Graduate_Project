@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
 
 /* 기본 스타일 초기화 및 설정 */
-body {
+body.home-page-body {
   font-family: 'Noto Sans KR', sans-serif;
   margin: 0;
   background-color: #f8f9fa;
@@ -9,7 +9,7 @@ body {
   overflow: scroll;
 }
 
-.container {
+.home-container {
   margin: 0 auto;
   background-color: #fff;
   /* 화면 전체 높이를 최소 높이로 설정 */
@@ -118,20 +118,28 @@ body {
   padding: 1rem 2rem;
 }
 
-/* --- 지도 스타일 --- */
 
-.map-display-area {
-  padding: 20px;
-  text-align: center;
+/* --- 지도 및 도장 뷰 레이아웃 (2단) --- */
+
+/* 지도와 도장뷰를 Flex로 좌우 배치 */
+.map-and-stamp-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* 상단 정렬 */
+    gap: 20px; /* 두 영역 사이 간격 */
+    margin-left: 3%;
+    margin-right: 3%;
 }
 
+/* 지도 컨테이너 (왼쪽 영역) */
 .map-container-wrapper {
-  max-width: 800px;
-  margin: 0 auto;
-  background-color: #fcfcfc;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding-top: 20px;
+    flex: 2; /* 지도 영역을 더 넓게 (예: 60%) */
+    min-width: 400px;
+    padding: 20px;
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* SVG 지도 기본 스타일 */
@@ -152,6 +160,11 @@ body {
   transition: fill 0.2s;
 }
 
+/* ⭐️ [!!추가!!] 한 번이라도 방문한 지역의 색상 */
+.map-path.visited {
+    fill: #8BC34A !important; /* 연두색 (Lime Green) */
+}
+
 /* 마우스 호버(Hover) 시 스타일 */
 .map-path:hover {
   fill: #B0B0B0;
@@ -163,4 +176,62 @@ body {
   /* 주황색으로 강조 */
 }
 
-/* 💡 추후: .map-path.visited { fill: #4CAF50; } */
+/* ⭐️ 방문했고 선택된 지역 (선택 강조 유지) */
+.map-path.visited.selected {
+    fill: #FF5722; 
+    stroke-width: 1px;
+}
+
+/* 도장 뷰 (오른쪽 영역) */
+.stamp-view-box {
+    flex: 1; /* 도장 영역을 좁게 (예: 30%) */
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    min-height: 250px; /* 최소 높이 지정 */
+}
+
+/* 초기 메시지 스타일 */
+.stamp-view-box.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #666;
+    background-color: #f7f7f7;
+}
+
+/* 도장 획득 영역 스타일 */
+.stamp-area {
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 1px dashed #eee;
+}
+
+.stamp-icon {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+.stamp-achieved p {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* 진행바 스타일 */
+.progress-bar-container {
+    width: 80%;
+    margin: 10px auto;
+    background-color: #eee;
+    border-radius: 5px;
+    height: 10px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #2196F3; /* 파란색 진행 색상 */
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}

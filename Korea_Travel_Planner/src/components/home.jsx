@@ -16,8 +16,84 @@ import {
   getDocs
 } from "firebase/firestore";
 
-// 아이콘을 간단한 컴포넌트로 만듭니다. 실제 프로젝트에서는 SVG 아이콘 라이브러리를 사용하는 것이 좋습니다.
-const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}</div>;
+const MIN_STAMP_COUNT = 5; // 도장 획득 최소 횟수 설정
+
+const StampView = ({ selectedRegion, visitedRegionsData }) => {
+  // 1. 현재 선택된 지역의 방문 횟수를 가져옵니다.
+  const visitCount = visitedRegionsData[selectedRegion] || 0;
+  const isStamped = visitCount >= MIN_STAMP_COUNT;
+  const visitsRemaining = MIN_STAMP_COUNT - visitCount;
+
+  if (!selectedRegion) {
+    return (
+      <div className="stamp-view-box empty">
+        <p>🗺️ 지도를 클릭하여 방문 횟수를 확인하세요.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="stamp-view-box">
+      <h3>🏆 {selectedRegion} 방문 횟수 </h3>
+      <p className="visit-count">
+        총 방문 횟수: <strong>{visitCount}회</strong>
+      </p>
+
+      <div className="stamp-area">
+        {isStamped ? (
+          <div className="stamp-achieved">
+            {/* 5회 이상 방문 도장 이미지 대체 */}
+            <div className="stamp-icon">🎉</div>
+            <p><strong>도장 획득 완료!</strong></p>
+          </div>
+        ) : (
+          <div className="stamp-pending">
+            <p>도장 획득까지 <strong>{visitsRemaining}회</strong> 남았습니다.</p>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{ width: `${(visitCount / MIN_STAMP_COUNT) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * 한국 주소 문자열에서 시/군/구 이름을 추출합니다.
+ * 예: "전북특별자치도 김제시 금산면..." -> "김제시"
+ * @param {string} address 전체 주소 문자열
+ * @returns {string | null} 추출된 시/군/구 이름 또는 찾지 못했을 경우 null
+ */
+
+
+
+const extractRegionFromAddress = (address) => {
+  if (!address) return null;
+
+  // 주소를 공백으로 분리합니다.
+  const parts = address.trim().split(/\s+/);
+
+  // 분리된 각 부분을 순회하며 '시', '군', '구'로 끝나는 토큰을 찾습니다.
+  // '특별시', '광역시', '특별자치도' 등 상위 단위는 건너뛰기 위해 간단한 규칙을 적용합니다.
+
+  for (const part of parts) {
+    if (part.endsWith('시') || part.endsWith('군') || part.endsWith('구')) {
+      // '특별시'와 '광역시'는 보통 첫 번째 토큰과 연결되거나, 두 번째 토큰까지 포함되므로,
+      // 세 번째 토큰부터 검사하여 가장 구체적인 지역을 찾는 것이 안전하지만,
+      // 여기서는 '시', '군', '구'로 끝나는 첫 번째 유효한 단어를 반환합니다.
+
+      // 대부분의 경우 '서울특별시', '부산광역시', '제주특별자치도'와 같은 상위 행정구역을 지나
+      // '강남구', '부산진구', '김제시'와 같은 시/군/구가 반환될 것입니다.
+      return part;
+    }
+  }
+
+  return null; // 유효한 지역을 찾지 못한 경우
+};
 
 // 메인 페이지 컴포넌트
 const Home = () => {
@@ -25,9 +101,10 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Home 컴포넌트 최상단에서 useNavigate를 호출합니다.
   const navigate = useNavigate();
-
   // [!!신규!!] 가장 가까운 일정을 저장할 state
   const [closestPlan, setClosestPlan] = useState(null);
+  //도장 방문횟수 저장
+  const [visitedRegionsData, setVisitedRegionsData] = useState({}); // 시/군/구별 방문 횟수 집계 데이터 State
   // [!!통합!!] 지도 관련 State: 현재 선택된 지역
   const [selectedRegion, setSelectedRegion] = useState(null);
 
@@ -79,6 +156,77 @@ const Home = () => {
     fetchClosestPlan();
   }, []); // 컴포넌트 마운트 시 한 번만 실행
 
+  // 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계하는 useEffect
+  useEffect(() => {
+    const calculateAllVisits = async () => {
+      try {
+        const plansCollectionRef = collection(db, "plans");
+        const querySnapshot = await getDocs(plansCollectionRef);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const counts = {}; // { '지역명': 횟수 } 집계 객체
+
+        for (const planDoc of querySnapshot.docs) {
+          const planData = planDoc.data();
+
+          // 1. 일정의 종료일을 계산합니다.
+          const startDate = planData.startDate.toDate();
+          const duration = planData.duration || 1;
+
+          const endDate = new Date(startDate.getTime());
+          endDate.setDate(startDate.getDate() + duration - 1);
+          endDate.setHours(0, 0, 0, 0);
+
+          // 2. [!! 핵심 필터링 !!] 종료일이 오늘보다 이전인 '완료된 일정'만 집계합니다.
+          if (endDate <= today) {
+
+            // 3. 완료된 일정의 장소 데이터 집계
+            const daysCollectionRef = collection(db, "plans", planDoc.id, "days");
+            const daysSnapshot = await getDocs(daysCollectionRef);
+
+            for (const dayDoc of daysSnapshot.docs) {
+              const dayData = dayDoc.data();
+
+              // 'places' 배열이 없으면 건너뜁니다.
+              const places = dayData.places || [];
+
+              places.forEach(place => {
+                // ⭐️ 주소 필드 사용: address_name
+                const fullAddress = place.address_name;
+
+                // ⭐️ 유틸리티 함수를 사용해 시/군/구 이름 추출
+                const region = extractRegionFromAddress(fullAddress);
+
+                // ⭐️ [로그 1] 주소 추출이 성공했는지 확인
+                if (!region) {
+                  console.warn("❌ 지역 이름 추출 실패 (주소):", fullAddress);
+                } else {
+                  console.log(`✅ 추출 성공: ${region}. 현재 카운트: ${counts[region] || 0}`);
+                }
+
+                if (region) {
+                  counts[region] = (counts[region] || 0) + 1;
+                }
+              });
+            }
+          }
+        }
+
+        console.log("--- 최종 방문 지역 집계 데이터 ---");
+        console.log(counts);
+
+        console.log("집계된 방문 지역 목록:", Object.keys(counts));
+        setVisitedRegionsData(counts); // 최종 집계 결과를 State에 저장
+      } catch (error) {
+        console.error("완료된 일정 방문 기록 집계 중 오류 발생:", error);
+      }
+    };
+
+    calculateAllVisits();
+  }, [db]); // db 객체 변경 시 재실행 (일반적으로 빈 배열이어도 무방함)
+
   // 날짜 포맷팅 헬퍼 함수 (예: 2025.11.21)
   const formatDate = (date) => {
     if (!date) return '';
@@ -98,10 +246,7 @@ const Home = () => {
     // e.target이 <svg> 같은 상위 요소일 경우 regionId가 빈 문자열일 수 있습니다.
     if (regionId && regionId.length > 0) {
       setSelectedRegion(regionId);
-      alert(`선택한 지역: ${regionId}`);
-    } else {
-      // ID가 없는 요소를 클릭한 경우 오류를 내지 않고 무시합니다.
-      console.log("ID가 없는 요소를 클릭했습니다. (SVG 여백일 수 있음)");
+      // alert(`선택한 지역: ${regionId}`);
     }
   };
 
@@ -173,8 +318,15 @@ const Home = () => {
     // (성공/실패와 관계없이 모달은 Plan_add.jsx의 onSubmit에서 닫힙니다)
   };
 
+  useEffect(() => {
+    document.body.classList.add('home-page-body');
+    return () => {
+      document.body.classList.remove('home-page-body');
+    };
+  }, []);
+
   return (
-    <div className="container">
+    <div className="home-container">
       <Header
         left={<button className="header-button icon-back" onClick={() => navigate('/home')}>
           {'🛫'}
@@ -217,16 +369,25 @@ const Home = () => {
         </div>
       </div>
 
-      <main className="content-area map-display-area">
-        <div className="map-container-wrapper">
-          <h2>지역별 여행 도장 현황</h2>
+      {/* ⭐️ [!!핵심!!] 지도와 도장뷰를 감싸는 2단 레이아웃 */}
+      <main className="content-area map-and-stamp-layout">
 
-          {/* ⭐️ 분리된 KoreaMap 컴포넌트 렌더링 */}
+        {/* 1. 지도 영역 (왼쪽) */}
+        <div className="map-container-wrapper">
+          <h2>🗺️ 방문 지도</h2>
           <KoreaMap
             onRegionClick={handleRegionClick}
             selectedRegion={selectedRegion}
+            // 💡 지도를 색칠하기 위해 집계 데이터를 props로 전달해야 합니다.
+            visitedRegionsData={visitedRegionsData}
           />
         </div>
+
+        {/* 2. 도장 통계 영역 (오른쪽) */}
+        <StampView
+          selectedRegion={selectedRegion}
+          visitedRegionsData={visitedRegionsData} // 집계 데이터 전달
+        />
       </main>
       <Footer onOpenModalClick={() => setIsModalOpen(true)} />
 
