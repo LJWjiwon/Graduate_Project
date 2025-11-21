@@ -6,11 +6,17 @@ body {
   margin: 0;
   background-color: #f8f9fa;
   color: #333;
+  overflow: scroll;
 }
 
 .container {
   margin: 0 auto;
   background-color: #fff;
+  /* 화면 전체 높이를 최소 높이로 설정 */
+  min-height: 100vh;
+
+  /* [!!핵심!!] 내용이 넘칠 때 세로 스크롤바를 만듭니다. */
+  overflow-y: auto;
 }
 
 /* 헤더 */
@@ -22,7 +28,8 @@ body {
   border: none;
   cursor: pointer;
   padding: 0;
-  flex-shrink: 0; /* 크기 고정 */
+  flex-shrink: 0;
+  /* 크기 고정 */
 }
 
 /* 뒤로가기 아이콘 */
@@ -33,21 +40,24 @@ body {
 }
 
 .hero-section {
-    display: flex; 
-    align-items: center; /* 세로 중앙 정렬 */
-    justify-content: space-between; /* 양 끝에 배치 */
-    margin: 20px 0;
-    padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  /* 세로 중앙 정렬 */
+  justify-content: space-between;
+  /* 양 끝에 배치 */
+  margin: 20px 0;
+  padding: 10px 20px;
 }
 
 /* 히어로 이미지 영역 */
 .hero-image {
-  width: 60%; 
-  height: 200px; 
-  object-fit: cover; /* 이미지가 잘리지 않게 하려면 'contain'을, 채우려면 'cover'를 사용 */
+  width: 60%;
+  height: 200px;
+  object-fit: cover;
+  /* 이미지가 잘리지 않게 하려면 'contain'을, 채우려면 'cover'를 사용 */
   padding-left: 8%;
   object-position: 50% 80%;
-  
+
   /* 2. 중앙 정렬 */
   /* display: block; 
   margin: 0 auto;  */
@@ -55,43 +65,52 @@ body {
 
 /* 다가오는 일정 표시 박스 크기 및 정렬 */
 .upcoming-plan-box {
-    width: 20%; 
-    text-align: center;
-    margin-right: 120px;
+  width: 20%;
+  text-align: center;
+  margin-right: 120px;
 
-    /* [!!신규!!] 테두리 추가 */
-    border: 1px solid #ddd; /* 얇고 연한 회색 테두리 */
-    border-radius: 8px; /* 모서리 둥글게 */
-    padding: 15px 10px; /* 내부 여백 추가 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 은은한 그림자 추가 */
+  /* [!!신규!!] 테두리 추가 */
+  border: 1px solid #ddd;
+  /* 얇고 연한 회색 테두리 */
+  border-radius: 8px;
+  /* 모서리 둥글게 */
+  padding: 15px 10px;
+  /* 내부 여백 추가 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* 은은한 그림자 추가 */
 }
 
 /* D-day 글자 강조 (가장 중요) */
 .d-day-large {
-    font-size: 3.5rem; /* 매우 크게 설정 */
-    font-weight: 800; /* 굵게 강조 */
-    color: #4CAF50; /* 강조 색상 (초록색) */
-    display: block; 
-    margin-bottom: 5px;
+  font-size: 3.5rem;
+  /* 매우 크게 설정 */
+  font-weight: 800;
+  /* 굵게 강조 */
+  color: #4CAF50;
+  /* 강조 색상 (초록색) */
+  display: block;
+  margin-bottom: 5px;
 }
 
 /* D-DAY (오늘)일 경우 특별 스타일 */
 .d-day-today {
-    color: #FF5722; /* 오늘인 경우 주황색으로 강조 */
+  color: #FF5722;
+  /* 오늘인 경우 주황색으로 강조 */
 }
 
 /* 일정 이름과 날짜 스타일 */
 .plan-name-small {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-    cursor: pointer; /* 클릭 가능한 요소임을 표시 */
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  cursor: pointer;
+  /* 클릭 가능한 요소임을 표시 */
 }
 
 .plan-date-small {
-    font-size: 0.9rem;
-    color: #666;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 /* 메인 콘텐츠 */
@@ -99,4 +118,49 @@ body {
   padding: 1rem 2rem;
 }
 
+/* --- 지도 스타일 --- */
 
+.map-display-area {
+  padding: 20px;
+  text-align: center;
+}
+
+.map-container-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #fcfcfc;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding-top: 20px;
+}
+
+/* SVG 지도 기본 스타일 */
+.korea-map {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* ⭐️ SVG Path 기본 스타일 (각 지역) */
+.map-path {
+  fill: #E0E0E0;
+  /* 기본 채우기 색상 (옅은 회색) */
+  stroke: #ffffff;
+  /* 경계선 색상 (흰색) */
+  stroke-width: 0.5px;
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+
+/* 마우스 호버(Hover) 시 스타일 */
+.map-path:hover {
+  fill: #B0B0B0;
+}
+
+/* ⭐️ 클릭으로 '선택된' 지역 스타일 */
+.map-path.selected {
+  fill: #FF5722;
+  /* 주황색으로 강조 */
+}
+
+/* 💡 추후: .map-path.visited { fill: #4CAF50; } */

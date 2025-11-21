@@ -4,6 +4,7 @@ import './home.css';
 import Footer from './footer.jsx';
 import Header from './header.jsx';
 import Plan_add from './plan_add_modify.jsx';
+import KoreaMap from './KoreaMap.jsx';
 
 // 2. Firebase 관련 모듈 import
 import { db, auth } from '../firebase.js'; // 방금 만든 설정 파일
@@ -22,11 +23,13 @@ const Icon = ({ name, children }) => <div className={`icon ${name}`}>{children}<
 const Home = () => {
   // 모달을 켜고 끄는 state를 추가합니다.
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   // Home 컴포넌트 최상단에서 useNavigate를 호출합니다.
   const navigate = useNavigate();
+
   // [!!신규!!] 가장 가까운 일정을 저장할 state
   const [closestPlan, setClosestPlan] = useState(null);
+  // [!!통합!!] 지도 관련 State: 현재 선택된 지역
+  const [selectedRegion, setSelectedRegion] = useState(null);
 
   // [!!신규!!] ⭐️ 가장 가까운 다가오는 일정을 불러오는 useEffect
   useEffect(() => {
@@ -83,6 +86,23 @@ const Home = () => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}.${month}.${day}`;
+  };
+
+  // [!!통합!!] 지도 클릭 핸들러 (KoreaMap.jsx에서 호출됨)
+  const handleRegionClick = (regionIdString) => {
+
+    // 이젠 e.target.id가 아니라, regionIdString에 이미 ID 값이 들어있습니다.
+    const regionId = regionIdString;
+
+    // ⭐️ (핵심) regionId가 유효한지 먼저 확인합니다. 
+    // e.target이 <svg> 같은 상위 요소일 경우 regionId가 빈 문자열일 수 있습니다.
+    if (regionId && regionId.length > 0) {
+      setSelectedRegion(regionId);
+      alert(`선택한 지역: ${regionId}`);
+    } else {
+      // ID가 없는 요소를 클릭한 경우 오류를 내지 않고 무시합니다.
+      console.log("ID가 없는 요소를 클릭했습니다. (SVG 여백일 수 있음)");
+    }
   };
 
   const handleCreatePlan = async (data) => {
@@ -164,7 +184,7 @@ const Home = () => {
       </Header>
 
       <div className="hero-section">
-        <img src="src\assets\Trip_img.png" alt="여행지 이미지" class="hero-image"></img>
+        <img src="src\assets\Trip_img.png" alt="여행지 이미지" className="hero-image"></img>
         {/* [!!신규!!] 다가오는 일정 표시 영역 */}
         <div className="upcoming-plan-box">
           {closestPlan ? (
@@ -197,8 +217,16 @@ const Home = () => {
         </div>
       </div>
 
-      <main className="content-area">
+      <main className="content-area map-display-area">
+        <div className="map-container-wrapper">
+          <h2>지역별 여행 도장 현황</h2>
 
+          {/* ⭐️ 분리된 KoreaMap 컴포넌트 렌더링 */}
+          <KoreaMap
+            onRegionClick={handleRegionClick}
+            selectedRegion={selectedRegion}
+          />
+        </div>
       </main>
       <Footer onOpenModalClick={() => setIsModalOpen(true)} />
 
