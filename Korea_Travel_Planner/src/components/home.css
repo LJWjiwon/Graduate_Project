@@ -135,11 +135,14 @@ body.home-page-body {
 .map-container-wrapper {
     flex: 2; /* 지도 영역을 더 넓게 (예: 60%) */
     min-width: 400px;
-    padding: 20px;
     background-color: #fcfcfc;
     border: 1px solid #eee;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.map-container-wrapper h2 {
+  padding-left: 20px;
 }
 
 /* SVG 지도 기본 스타일 */
@@ -184,7 +187,7 @@ body.home-page-body {
 
 /* 도장 뷰 (오른쪽 영역) */
 .stamp-view-box {
-    flex: 1; /* 도장 영역을 좁게 (예: 30%) */
+    flex: 0.8; /* 도장 영역을 좁게 (예: 30%) */
     padding: 20px;
     background-color: #ffffff;
     border: 1px solid #ddd;

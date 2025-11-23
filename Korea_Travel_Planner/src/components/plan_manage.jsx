@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './plan_manage.css';
 import Header from './header.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +42,8 @@ const Manage = () => {
   const [myPlans, setMyPlans] = useState([]);
   // [!!신규!!] 5. 로딩 상태를 관리할 state (선택 사항이지만 권장)
   const [isLoading, setIsLoading] = useState(true);
+  // [!!추가!!] 1. 현재 활성화된 탭 상태 ('all', 'scheduled', 'in_progress', 'completed')
+  const [activeTab, setActiveTab] = useState('all');
 
   // [!!신규!!] 6. 수정 모달 상태 관리
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -55,6 +57,65 @@ const Manage = () => {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}.${m}.${d}`;
+  };
+
+  // [!!추가!!] 2. 일정의 시작일과 종료일 (Date 객체, 자정 기준)을 계산하는 헬퍼 함수
+  const getPlanDates = (plan) => {
+    const { startDate, duration } = plan.rawData; // rawData: {startDate: 'YYYY-MM-DD', duration: number}
+
+    // 1. 계획 시작일 (Date 객체, 자정)
+    const parts = startDate.split('-').map(Number);
+    const planStartDate = new Date(parts[0], parts[1] - 1, parts[2]); // MM은 0부터 시작
+
+    // 2. 계획 종료일 (Date 객체, 자정)
+    const planEndDate = new Date(planStartDate.getTime());
+    // duration이 N일이면 N-1일을 더해야 종료일이 됩니다.
+    planEndDate.setDate(planStartDate.getDate() + duration - 1);
+
+    return { planStartDate, planEndDate };
+  };
+
+  // [!!추가!!] 3. 일정의 현재 상태를 분류하는 함수
+  const getPlanStatus = (plan) => {
+    const { planStartDate, planEndDate } = getPlanDates(plan);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 날짜를 자정으로 설정하여 시간 요소 무시
+
+    if (planEndDate.getTime() < today.getTime()) {
+      return 'completed'; // 완료: 종료일이 오늘보다 이전
+    } else if (planStartDate.getTime() <= today.getTime() && today.getTime() <= planEndDate.getTime()) {
+      return 'in_progress'; // 진행중: 오늘이 시작일과 종료일 사이에 포함
+    } else { // planStartDate > today
+      return 'scheduled'; // 예정: 시작일이 오늘보다 이후
+    }
+  };
+
+  // [!!수정!!] 1. 일정 목록 필터링 및 정렬 함수를 useMemo로 감싸 성능 최적화
+  const filteredPlans = useMemo(() => {
+    let list = myPlans;
+
+    // 1-1. 활성 탭에 따라 필터링
+    if (activeTab !== 'all') {
+      list = myPlans.filter(plan => getPlanStatus(plan) === activeTab);
+    }
+
+    // 1-2. 시작일(startDate) 기준 과거순(오름차순) 정렬
+    // rawData.startDate는 'YYYY-MM-DD' 문자열
+    list.sort((a, b) => {
+      // Date.parse를 사용해 문자열 날짜를 밀리초로 변환하여 비교
+      const dateA = Date.parse(a.rawData.startDate);
+      const dateB = Date.parse(b.rawData.startDate);
+      return dateA - dateB; // 과거일수록(작을수록) 앞으로 (오름차순)
+    });
+
+    return list;
+  }, [myPlans, activeTab]); // myPlans나 activeTab이 변경될 때만 재계산
+
+
+  // [!!신규!!] 2. 탭별 개수를 계산하는 함수 (myPlans 원본 사용)
+  const getTabCount = (status) => {
+    if (status === 'all') return myPlans.length;
+    return myPlans.filter(plan => getPlanStatus(plan) === status).length;
   };
 
   // 7. 컴포넌트 마운트 시 Firestore에서 데이터 가져오기
@@ -199,13 +260,13 @@ const Manage = () => {
       const daysCollectionRef = collection(db, "plans", planId, "days");
       const daysQuerySnap = await getDocs(daysCollectionRef);
       const existingDays = daysQuerySnap.docs.map(d => d.data().dayNumber);
-      
+
       if (newDuration > oldDuration) {
         // 일차가 늘어난 경우: (oldDuration + 1)일차부터 newDuration 일차까지 생성
         for (let i = oldDuration + 1; i <= newDuration; i++) {
           const dayDate = new Date(newBaseDate.getTime());
           dayDate.setDate(newBaseDate.getDate() + (i - 1));
-          
+
           // 새 Day 문서 참조 (ID 자동 생성)
           const newDayRef = doc(collection(db, "plans", planId, "days"));
           batch.set(newDayRef, {
@@ -275,27 +336,51 @@ const Manage = () => {
       >
       </Header>
 
+      {/* [!!수정!!] 3. 탭 네비게이션: getTabCount 함수를 사용해 개수 표시 */}
+      <nav className="plan-filter-tabs">
+        <button
+          className={activeTab === 'all' ? 'active' : ''}
+          onClick={() => setActiveTab('all')}
+        >
+          전체 ({getTabCount('all')})
+        </button>
+        <button
+          className={activeTab === 'scheduled' ? 'active' : ''}
+          onClick={() => setActiveTab('scheduled')}
+        >
+          예정 ({getTabCount('scheduled')})
+        </button>
+        <button
+          className={activeTab === 'in_progress' ? 'active' : ''}
+          onClick={() => setActiveTab('in_progress')}
+        >
+          진행중 ({getTabCount('in_progress')})
+        </button>
+        <button
+          className={activeTab === 'completed' ? 'active' : ''}
+          onClick={() => setActiveTab('completed')}
+        >
+          완료 ({getTabCount('completed')})
+        </button>
+      </nav>
+
       <main className="schedule-main">
         <div className="schedule-list">
-
-          {/* [!!수정!!] 8. 로딩 및 데이터 상태에 따른 렌더링 */}
           {isLoading ? (
             <p>일정 목록을 불러오는 중입니다...</p>
           ) : myPlans.length === 0 ? (
             <p>생성된 일정이 없습니다. 홈에서 일정을 추가해보세요.</p>
+          ) : filteredPlans.length === 0 ? (
+            <p>현재 탭에 해당하는 일정이 없습니다.</p>
           ) : (
-            // [!!수정!!] scheduleData 대신 myPlans를 맵핑
-            myPlans.map(item => (
+            // [!!수정!!] filteredPlans를 맵핑합니다.
+            filteredPlans.map(item => (
               <ScheduleItem
-                key={item.id} // Firestore 문서 ID
+                key={item.id}
                 title={item.title}
                 dateRange={item.dateRange}
                 duration={item.duration}
-                // [!!수정!!] 9. 클릭 시 planId를 URL로 전달하며 이동
                 onClick={() => navigate(`/plan/${item.id}`)}
-
-                // [!!수정!!] 9. onDelete prop 전달
-                // item.id와 item.title을 handleDeletePlan 함수에 넘겨줍니다.
                 onDelete={() => handleDeletePlan(item.id, item.title)}
                 onEdit={() => handleOpenEditModal(item)}
               />
@@ -304,17 +389,14 @@ const Manage = () => {
         </div>
       </main>
 
-      {/* [!!신규!!] 12. 수정 모달 렌더링 */}
       {isEditModalOpen && (
         <CreatePlanModal
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
           onSubmit={handleUpdatePlan}
-          // "editingPlan"의 "rawData"를 모달의 초기 데이터로 전달
-          initialData={editingPlan?.rawData} 
+          initialData={editingPlan?.rawData}
         />
       )}
-
     </div>
   );
 };

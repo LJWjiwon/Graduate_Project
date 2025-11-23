@@ -32,6 +32,32 @@ body {
   font-weight: bold;
 }
 
+/* [!!추가!!] 탭 네비게이션 스타일 */
+.plan-filter-tabs {
+    display: flex;
+    justify-content: space-around; /* 탭을 균등하게 배치 */
+    padding: 10px 0;
+    margin-bottom: 15px; /* 일정 목록과의 간격 */
+    border-bottom: 1px solid #eee; /* 구분선 */
+}
+
+.plan-filter-tabs button {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #888;
+    transition: color 0.2s, border-bottom 0.2s;
+}
+
+.plan-filter-tabs button.active {
+    color: #333; /* 활성화된 탭 글자색 */
+    font-weight: 700;
+    border-bottom: 2px solid #333; /* 활성화된 탭 밑줄 */
+}
+
 /* 메인 콘텐츠 */
 .schedule-main {
   padding: 1.5rem;
