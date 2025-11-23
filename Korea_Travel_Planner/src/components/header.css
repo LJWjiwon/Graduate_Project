@@ -14,6 +14,22 @@
   font-family: 'Noto Sans KR', sans-serif;
 }
 
+/* 사용자 정보 컨테이너 (이름과 버튼을 묶어 오른쪽으로) */
+.user-info-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 이름과 아이콘 버튼 사이 간격 */
+}
+
+/* 새로 추가된 사용자 이름 텍스트 스타일 */
+.header-user-name {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+    margin-right: 5px; /* 아이콘 버튼과의 간격 조절 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
 
 /* 헤더 양 옆 버튼 (뒤로가기, 유저) */
 .header-button {
