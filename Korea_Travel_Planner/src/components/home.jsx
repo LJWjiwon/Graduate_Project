@@ -13,7 +13,9 @@ import {
   doc,
   writeBatch,
   Timestamp,
-  getDocs
+  getDocs,
+  query,
+  where
 } from "firebase/firestore";
 
 const MIN_STAMP_COUNT = 5; // 도장 획득 최소 횟수 설정
@@ -107,16 +109,39 @@ const Home = () => {
   const [visitedRegionsData, setVisitedRegionsData] = useState({}); // 시/군/구별 방문 횟수 집계 데이터 State
   // [!!통합!!] 지도 관련 State: 현재 선택된 지역
   const [selectedRegion, setSelectedRegion] = useState(null);
+  // [!!신규!!] Firebase Auth 상태를 저장하는 State 추가
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // [!!신규!!] ⭐️ 가장 가까운 다가오는 일정을 불러오는 useEffect
+  // [!!수정!!] 0. Firebase Auth 상태 변화 감지 및 사용자 정보 업데이트
   useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      // 로그인 상태가 변경될 때마다 currentUser state를 업데이트합니다.
+      setCurrentUser(user);
+      // 사용자 정보가 바뀌면 두 개의 데이터 로딩 useEffect도 다시 실행되어야 합니다.
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // [!!수정!!] ⭐️ 가장 가까운 다가오는 일정을 불러오는 useEffect
+  useEffect(() => {
+    // [!!핵심!!] 로그인된 사용자 정보가 없으면 실행하지 않습니다.
+    if (!currentUser) {
+      setClosestPlan(null); // 혹시 남아있을 수 있는 이전 사용자 데이터 초기화
+      return;
+    }
+
     const fetchClosestPlan = async () => {
       try {
-        const plansCollectionRef = collection(db, "plans");
-        const querySnapshot = await getDocs(plansCollectionRef);
+        // 1. 쿼리 생성: plans 컬렉션 중 ownerId가 현재 유저 ID인 문서만 가져오도록 필터링
+        const plansQuery = query(
+          collection(db, "plans"),
+          where("ownerId", "==", currentUser.uid)
+        );
+
+        // 2. 필터링된 쿼리 실행
+        const querySnapshot = await getDocs(plansQuery);
 
         const today = new Date();
-        // 시간을 00:00:00으로 설정하여 일(day) 기준으로 정확하게 비교
         today.setHours(0, 0, 0, 0);
         let minDays = Infinity;
         let closest = null;
@@ -124,15 +149,11 @@ const Home = () => {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
 
-          // Firestore Timestamp를 JS Date 객체로 변환
           const startDate = data.startDate.toDate();
-          startDate.setHours(0, 0, 0, 0); // 비교를 위해 시간 제거
+          startDate.setHours(0, 0, 0, 0);
 
-          // 오늘 또는 미래의 일정만 계산 (D-day는 0일로 표시되도록)
           if (startDate >= today) {
-            // 시작일과 오늘 날짜의 차이 (밀리초)
             const diffTime = startDate.getTime() - today.getTime();
-            // 일(day)로 변환하고 올림 (D-day가 0으로 나오도록)
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays < minDays) {
@@ -140,7 +161,7 @@ const Home = () => {
               closest = {
                 id: doc.id,
                 name: data.name,
-                startDate: data.startDate.toDate(), // Date 객체로 저장
+                startDate: data.startDate.toDate(),
                 dDay: diffDays
               };
             }
@@ -154,24 +175,35 @@ const Home = () => {
     };
 
     fetchClosestPlan();
-  }, []); // 컴포넌트 마운트 시 한 번만 실행
+  }, [currentUser]); // [!!핵심!!] currentUser가 변경될 때마다 재실행
 
-  // 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계하는 useEffect
+  // [!!수정!!] 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계하는 useEffect
   useEffect(() => {
+    // [!!핵심!!] 로그인된 사용자 정보가 없으면 실행하지 않습니다.
+    if (!currentUser) {
+      setVisitedRegionsData({}); // 데이터 초기화
+      return;
+    }
+
     const calculateAllVisits = async () => {
       try {
-        const plansCollectionRef = collection(db, "plans");
-        const querySnapshot = await getDocs(plansCollectionRef);
+        // 1. 쿼리 생성: plans 컬렉션 중 ownerId가 현재 유저 ID인 문서만 가져오도록 필터링
+        const plansQuery = query(
+          collection(db, "plans"),
+          where("ownerId", "==", currentUser.uid)
+        );
+
+        // 2. 필터링된 쿼리 실행
+        const querySnapshot = await getDocs(plansQuery);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const counts = {}; // { '지역명': 횟수 } 집계 객체
+        const counts = {};
 
         for (const planDoc of querySnapshot.docs) {
           const planData = planDoc.data();
 
-          // 1. 일정의 종료일을 계산합니다.
           const startDate = planData.startDate.toDate();
           const duration = planData.duration || 1;
 
@@ -179,32 +211,21 @@ const Home = () => {
           endDate.setDate(startDate.getDate() + duration - 1);
           endDate.setHours(0, 0, 0, 0);
 
-          // 2. [!! 핵심 필터링 !!] 종료일이 오늘보다 이전인 '완료된 일정'만 집계합니다.
-          if (endDate <= today) {
+          // 종료일이 오늘보다 이전인 '완료된 일정'만 집계
+          if (endDate < today) { // 조건 수정: '오늘보다 이전'이어야 완료된 일정임
 
-            // 3. 완료된 일정의 장소 데이터 집계
+            // 완료된 일정의 장소 데이터 집계
             const daysCollectionRef = collection(db, "plans", planDoc.id, "days");
             const daysSnapshot = await getDocs(daysCollectionRef);
 
             for (const dayDoc of daysSnapshot.docs) {
               const dayData = dayDoc.data();
 
-              // 'places' 배열이 없으면 건너뜁니다.
               const places = dayData.places || [];
 
               places.forEach(place => {
-                // ⭐️ 주소 필드 사용: address_name
                 const fullAddress = place.address_name;
-
-                // ⭐️ 유틸리티 함수를 사용해 시/군/구 이름 추출
                 const region = extractRegionFromAddress(fullAddress);
-
-                // ⭐️ [로그 1] 주소 추출이 성공했는지 확인
-                if (!region) {
-                  console.warn("❌ 지역 이름 추출 실패 (주소):", fullAddress);
-                } else {
-                  console.log(`✅ 추출 성공: ${region}. 현재 카운트: ${counts[region] || 0}`);
-                }
 
                 if (region) {
                   counts[region] = (counts[region] || 0) + 1;
@@ -214,18 +235,16 @@ const Home = () => {
           }
         }
 
-        console.log("--- 최종 방문 지역 집계 데이터 ---");
+        console.log("--- 최종 방문 지역 집계 데이터 (현재 유저) ---");
         console.log(counts);
-
-        console.log("집계된 방문 지역 목록:", Object.keys(counts));
-        setVisitedRegionsData(counts); // 최종 집계 결과를 State에 저장
+        setVisitedRegionsData(counts);
       } catch (error) {
         console.error("완료된 일정 방문 기록 집계 중 오류 발생:", error);
       }
     };
 
     calculateAllVisits();
-  }, [db]); // db 객체 변경 시 재실행 (일반적으로 빈 배열이어도 무방함)
+  }, [currentUser]); // [!!핵심!!] currentUser가 변경될 때마다 재실행
 
   // 날짜 포맷팅 헬퍼 함수 (예: 2025.11.21)
   const formatDate = (date) => {

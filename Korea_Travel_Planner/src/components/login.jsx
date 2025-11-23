@@ -26,6 +26,9 @@ const Login = () => {
       ],
       signInFlow: 'popup',
       autoUpgradeAnonymousUsers: true,
+      // [!!핵심 수정!!] 익명 계정 병합/업그레이드 시도를 비활성화합니다.
+      // 이렇게 하면 'firebaseui/anonymous-upgrade-merge-conflict' 오류를 피할 수 있습니다.
+      credentialHelper: firebaseui.auth.CredentialHelper.NONE,
 
       callbacks: {
         signInSuccessWithAuthResult: async function (authResult, redirectUrl) {
