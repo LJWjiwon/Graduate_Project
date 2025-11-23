@@ -20,6 +20,42 @@ import {
 
 const MIN_STAMP_COUNT = 5; // 도장 획득 최소 횟수 설정
 
+// [!!신규!!] 1. 여행 리포트 데이터를 표시하는 컴포넌트
+const TravelReport = ({ reportData }) => {
+  const { totalTrips, thisYearTrips, mostVisitedRegion, averageDuration } = reportData;
+
+  // 평균 기간 포맷팅 (예: 2박 3일)
+  const avgDurationStr = averageDuration > 0
+    ? `${Math.floor(averageDuration)}박 ${Math.floor(averageDuration) + 1}일`
+    : '집계 중...';
+
+  return (
+    <div className="travel-report-container">
+      <h3>📈 나의 여행 기록 리포트</h3>
+      <div className="report-cards">
+        <div className="report-card">
+          <h4>총 여행 횟수</h4>
+          <p className="report-value"><strong>{totalTrips}</strong> 회</p>
+        </div>
+        <div className="report-card">
+          <h4>올해 여행 횟수</h4>
+          <p className="report-value"><strong>{thisYearTrips}</strong> 회</p>
+        </div>
+        <div className="report-card">
+          <h4>최다 방문 지역</h4>
+          <p className="report-value">
+            <strong>{mostVisitedRegion || '기록 없음'}</strong>
+          </p>
+        </div>
+        <div className="report-card">
+          <h4>평균 여행 기간</h4>
+          <p className="report-value"><strong>{avgDurationStr}</strong></p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StampView = ({ selectedRegion, visitedRegionsData }) => {
   // 1. 현재 선택된 지역의 방문 횟수를 가져옵니다.
   const visitCount = visitedRegionsData[selectedRegion] || 0;
@@ -112,6 +148,14 @@ const Home = () => {
   // [!!신규!!] Firebase Auth 상태를 저장하는 State 추가
   const [currentUser, setCurrentUser] = useState(null);
 
+  // [!!신규!!] 2. 여행 리포트 데이터를 위한 State
+  const [reportData, setReportData] = useState({
+    totalTrips: 0,
+    thisYearTrips: 0,
+    mostVisitedRegion: '',
+    averageDuration: 0,
+  });
+
   // [!!수정!!] 0. Firebase Auth 상태 변화 감지 및 사용자 정보 업데이트
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -177,29 +221,36 @@ const Home = () => {
     fetchClosestPlan();
   }, [currentUser]); // [!!핵심!!] currentUser가 변경될 때마다 재실행
 
-  // [!!수정!!] 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계하는 useEffect
+  // [!!수정!!] 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계 및 리포트 계산
   useEffect(() => {
-    // [!!핵심!!] 로그인된 사용자 정보가 없으면 실행하지 않습니다.
     if (!currentUser) {
-      setVisitedRegionsData({}); // 데이터 초기화
+      setVisitedRegionsData({});
+      setReportData({ totalTrips: 0, thisYearTrips: 0, mostVisitedRegion: '', averageDuration: 0 });
       return;
     }
 
     const calculateAllVisits = async () => {
       try {
-        // 1. 쿼리 생성: plans 컬렉션 중 ownerId가 현재 유저 ID인 문서만 가져오도록 필터링
         const plansQuery = query(
           collection(db, "plans"),
           where("ownerId", "==", currentUser.uid)
         );
 
-        // 2. 필터링된 쿼리 실행
         const querySnapshot = await getDocs(plansQuery);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const currentYear = today.getFullYear();
 
-        const counts = {};
+        const counts = {}; // 지역 방문 횟수 집계
+
+        let completedTrips = 0;
+        let completedTripsThisYear = 0;
+        let totalDurationDays = 0;
+
+        // 기존 변수 대신 배열로 변경하거나, 아래 로직에서 바로 계산합니다.
+        let maxVisits = 0;
+        let mostVisitedRegions = []; // [!!핵심 수정!!] 공동 1위 지역을 저장할 배열
 
         for (const planDoc of querySnapshot.docs) {
           const planData = planDoc.data();
@@ -212,7 +263,13 @@ const Home = () => {
           endDate.setHours(0, 0, 0, 0);
 
           // 종료일이 오늘보다 이전인 '완료된 일정'만 집계
-          if (endDate < today) { // 조건 수정: '오늘보다 이전'이어야 완료된 일정임
+          if (endDate < today) {
+            completedTrips++;
+            totalDurationDays += duration;
+
+            if (endDate.getFullYear() === currentYear) {
+              completedTripsThisYear++;
+            }
 
             // 완료된 일정의 장소 데이터 집계
             const daysCollectionRef = collection(db, "plans", planDoc.id, "days");
@@ -220,12 +277,10 @@ const Home = () => {
 
             for (const dayDoc of daysSnapshot.docs) {
               const dayData = dayDoc.data();
-
               const places = dayData.places || [];
 
               places.forEach(place => {
-                const fullAddress = place.address_name;
-                const region = extractRegionFromAddress(fullAddress);
+                const region = extractRegionFromAddress(place.address_name);
 
                 if (region) {
                   counts[region] = (counts[region] || 0) + 1;
@@ -235,16 +290,44 @@ const Home = () => {
           }
         }
 
-        console.log("--- 최종 방문 지역 집계 데이터 (현재 유저) ---");
-        console.log(counts);
+        // [!!수정된 로직!!] 최다 방문 지역 (공동 1위 포함) 계산
+        for (const region in counts) {
+          if (counts[region] > maxVisits) {
+            // 현재 지역이 이전 최대값보다 크면, 최대값과 배열을 리셋
+            maxVisits = counts[region];
+            mostVisitedRegions = [region];
+          } else if (counts[region] === maxVisits && maxVisits > 0) {
+            // 현재 지역이 이전 최대값과 같으면, 배열에 추가 (공동 1위)
+            mostVisitedRegions.push(region);
+          } else if (maxVisits === 0) {
+            // 초기 maxVisits가 0일 때 (첫 지역일 때)
+            maxVisits = counts[region];
+            mostVisitedRegions = [region];
+          }
+        }
+
+        // 최종 표시될 문자열 생성: '서울시, 부산시, 대구시'
+        const mostVisitedRegionName = mostVisitedRegions.join(', ');
+
+        const averageDuration = completedTrips > 0 ? totalDurationDays / completedTrips : 0;
+
+
+        // State 업데이트
         setVisitedRegionsData(counts);
+        setReportData({
+          totalTrips: completedTrips,
+          thisYearTrips: completedTripsThisYear,
+          mostVisitedRegion: mostVisitedRegionName, // 쉼표로 연결된 문자열 저장
+          averageDuration: averageDuration,
+        });
+
       } catch (error) {
-        console.error("완료된 일정 방문 기록 집계 중 오류 발생:", error);
+        console.error("여행 기록 집계 중 오류 발생:", error);
       }
     };
 
     calculateAllVisits();
-  }, [currentUser]); // [!!핵심!!] currentUser가 변경될 때마다 재실행
+  }, [currentUser]);
 
   // 날짜 포맷팅 헬퍼 함수 (예: 2025.11.21)
   const formatDate = (date) => {
@@ -402,11 +485,17 @@ const Home = () => {
           />
         </div>
 
-        {/* 2. 도장 통계 영역 (오른쪽) */}
-        <StampView
-          selectedRegion={selectedRegion}
-          visitedRegionsData={visitedRegionsData} // 집계 데이터 전달
-        />
+        {/* 2. 오른쪽 열 (도장 통계와 리포트) */}
+        <div className="right-panel">
+          {/* 2-1. 도장 통계 영역 (가장 위) */}
+          <StampView
+            selectedRegion={selectedRegion}
+            visitedRegionsData={visitedRegionsData}
+          />
+
+          {/* [!!수정된 위치!!] 2-2. 여행 리포트 표시 (도장 통계 바로 밑) */}
+          <TravelReport reportData={reportData} />
+        </div>
       </main>
       <Footer onOpenModalClick={() => setIsModalOpen(true)} />
 

@@ -185,6 +185,15 @@ body.home-page-body {
     stroke-width: 1px;
 }
 
+/* [!!신규!!] 오른쪽 패널 컨테이너 (도장 통계 + 리포트) */
+.right-panel {
+    flex: 1; /* 오른쪽 영역이 지도의 절반 정도 차지 */
+    display: flex;
+    flex-direction: column; /* 자식 요소들을 위에서 아래로 배치 */
+    gap: 20px; /* StampView와 TravelReport 사이 간격 */
+    min-width: 250px;
+}
+
 /* 도장 뷰 (오른쪽 영역) */
 .stamp-view-box {
     flex: 0.8; /* 도장 영역을 좁게 (예: 30%) */
@@ -237,4 +246,67 @@ body.home-page-body {
     background-color: #2196F3; /* 파란색 진행 색상 */
     border-radius: 5px;
     transition: width 0.5s ease;
+}
+
+.travel-report-container {
+    background-color: #ffffff; /* 배경을 흰색으로 변경 */
+    padding: 15px; /* 패딩을 줄여서 작게 만듦 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee; /* 경계선 추가 */
+}
+
+.travel-report-container h3 {
+    font-size: 15px; /* 제목 크기 축소 */
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    border-bottom: 1px solid #ddd; /* 경계선 두께 축소 */
+    padding-bottom: 5px;
+    font-weight: 600;
+}
+
+/* 리포트 카드들을 담는 Grid 컨테이너 (2x2로 배치) */
+.report-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2열로 나란히 배치 */
+    gap: 10px;
+}
+
+/* 개별 리포트 카드 스타일 */
+.report-card {
+    /* flex 대신 grid 아이템으로 사용 */
+    background-color: #f9f9f9; /* 카드 배경색 */
+    border-radius: 6px;
+    padding: 10px; /* 패딩 축소 */
+    text-align: center;
+    box-shadow: none; /* 그림자 제거 또는 아주 약하게 */
+}
+
+.report-card h4 {
+    font-size: 13px; /* 항목 이름 크기 축소 */
+    color: #888;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.report-value strong {
+    font-size: 20px; /* 값 크기 축소 */
+    color: #007bff;
+    font-weight: 700;
+}
+
+/* --------------------------------- */
+/* 미디어 쿼리 (화면이 작아질 때 1단으로 변경) */
+/* --------------------------------- */
+@media (max-width: 768px) {
+    .map-and-stamp-layout {
+        flex-direction: column; /* 1단으로 변경 */
+        padding: 20px 10px;
+    }
+    
+    .right-panel {
+        /* 1단에서는 전체 너비를 사용 */
+        min-width: unset; 
+    }
 }
