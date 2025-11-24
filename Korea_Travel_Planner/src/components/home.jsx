@@ -5,6 +5,8 @@ import Footer from './footer.jsx';
 import Header from './header.jsx';
 import Plan_add from './plan_add_modify.jsx';
 import KoreaMap from './KoreaMap.jsx';
+import MonthlyBarChart from './MonthlyBarChart.jsx';
+import CategoryPieChart from './CategoryPieChart.jsx';
 
 // 2. Firebase 관련 모듈 import
 import { db, auth } from '../firebase.js'; // 방금 만든 설정 파일
@@ -107,6 +109,19 @@ const StampView = ({ selectedRegion, visitedRegionsData }) => {
  * @returns {string | null} 추출된 시/군/구 이름 또는 찾지 못했을 경우 null
  */
 
+/**
+ * 장소 카테고리 문자열에서 최상위 카테고리 이름을 추출합니다.
+ * 예: "문화,예술 > 종교 > 천주교 > 성당" -> "문화,예술"
+ * @param {string} categoryName 전체 카테고리 문자열
+ * @returns {string | null} 추출된 최상위 카테고리 이름 또는 찾지 못했을 경우 null
+ */
+const extractTopCategory = (categoryName) => {
+  if (!categoryName) return null;
+  // 첫 번째 ">" 기호 이전의 문자열을 가져옵니다.
+  const parts = categoryName.split('>');
+  // 공백을 제거하고 반환
+  return parts.length > 0 ? parts[0].trim() : null;
+};
 
 
 const extractRegionFromAddress = (address) => {
@@ -147,6 +162,10 @@ const Home = () => {
   const [selectedRegion, setSelectedRegion] = useState(null);
   // [!!신규!!] Firebase Auth 상태를 저장하는 State 추가
   const [currentUser, setCurrentUser] = useState(null);
+  // 월별 여행 횟수 데이터 (1월: 5, 2월: 2 등)
+  const [monthlyTrips, setMonthlyTrips] = useState(new Array(12).fill(0));
+  // 장소 카테고리별 방문 횟수 데이터 ({ '문화,예술': 10, '여행,관광': 25, ... })
+  const [categoryVisits, setCategoryVisits] = useState({});
 
   // [!!신규!!] 2. 여행 리포트 데이터를 위한 State
   const [reportData, setReportData] = useState({
@@ -251,6 +270,9 @@ const Home = () => {
         // 기존 변수 대신 배열로 변경하거나, 아래 로직에서 바로 계산합니다.
         let maxVisits = 0;
         let mostVisitedRegions = []; // [!!핵심 수정!!] 공동 1위 지역을 저장할 배열
+        // [!!신규!!] 그래프 데이터 집계 변수 추가
+        const monthlyCounts = new Array(12).fill(0); // 0월(1월)~11월(12월)
+        const categoryCounts = {}; // 카테고리별 방문 횟수
 
         for (const planDoc of querySnapshot.docs) {
           const planData = planDoc.data();
@@ -271,6 +293,13 @@ const Home = () => {
               completedTripsThisYear++;
             }
 
+            // [!!신규!!] 월별 여행 횟수 집계
+            const endMonth = endDate.getMonth(); // 0 (1월) ~ 11 (12월)
+            // 완료된 여행의 '종료월'을 기준으로 집계 (당해년도 여행만)
+            if (endDate.getFullYear() === currentYear) {
+              monthlyCounts[endMonth] += 1;
+            }
+
             // 완료된 일정의 장소 데이터 집계
             const daysCollectionRef = collection(db, "plans", planDoc.id, "days");
             const daysSnapshot = await getDocs(daysCollectionRef);
@@ -284,6 +313,12 @@ const Home = () => {
 
                 if (region) {
                   counts[region] = (counts[region] || 0) + 1;
+                }
+
+                // [!!신규!!] 장소 카테고리 집계
+                const topCategory = extractTopCategory(place.category_name);
+                if (topCategory) {
+                  categoryCounts[topCategory] = (categoryCounts[topCategory] || 0) + 1;
                 }
               });
             }
@@ -320,6 +355,10 @@ const Home = () => {
           mostVisitedRegion: mostVisitedRegionName, // 쉼표로 연결된 문자열 저장
           averageDuration: averageDuration,
         });
+
+        // [!!신규!!] 그래프 State 업데이트
+        setMonthlyTrips(monthlyCounts);
+        setCategoryVisits(categoryCounts);
 
       } catch (error) {
         console.error("여행 기록 집계 중 오류 발생:", error);
@@ -497,6 +536,19 @@ const Home = () => {
           <TravelReport reportData={reportData} />
         </div>
       </main>
+
+      {/* ⭐️ [!!신규!!] 그래프 섹션 제목 추가 */}
+      <h2 className="graph-section-title">📊 그래프 통계</h2>
+      {/* ⭐️ [!!신규!!] 그래프를 표시할 새로운 섹션 (지도 밑) */}
+      {/* 2단으로 구성 */}
+      <section className="graph-section-layout">
+        {/* 1. 월별 막대 그래프 (왼쪽) */}
+        <MonthlyBarChart monthlyCounts={monthlyTrips} />
+
+        {/* 2. 카테고리 원 그래프 (오른쪽) */}
+        <CategoryPieChart categoryVisits={categoryVisits} />
+      </section>
+
       <Footer onOpenModalClick={() => setIsModalOpen(true)} />
 
       <Plan_add
