@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // users 컬렉션의 {userId} 문서에 대하여
+    match /users/{userId} {
+
+      // 본인 ID와 일치하면 '읽기'와 '쓰기'(생성/수정/삭제)를 모두 허용
+      allow read, write: if request.auth.uid == userId;
+    }
+
+			match /{document=**} {
+      // 로그인한 사용자는(request.auth != null) 모든 문서의
+      // 읽기(read)와 쓰기(write)를 허용합니다.
+      allow read, write: if request.auth != null;
+    }
+    
+    
+  }
+}
+  

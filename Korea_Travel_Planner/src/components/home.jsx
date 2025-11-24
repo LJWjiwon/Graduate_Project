@@ -7,6 +7,7 @@ import Plan_add from './plan_add_modify.jsx';
 import KoreaMap from './KoreaMap.jsx';
 import MonthlyBarChart from './MonthlyBarChart.jsx';
 import CategoryPieChart from './CategoryPieChart.jsx';
+import HeaderImage from '../assets/Trip_img.png';
 
 // 2. Firebase 관련 모듈 import
 import { db, auth } from '../firebase.js'; // 방금 만든 설정 파일
@@ -477,7 +478,7 @@ const Home = () => {
       </Header>
 
       <div className="hero-section">
-        <img src="src\assets\Trip_img.png" alt="여행지 이미지" className="hero-image"></img>
+        <img src={HeaderImage} alt="여행지 이미지" className="hero-image"></img>
         {/* [!!신규!!] 다가오는 일정 표시 영역 */}
         <div className="upcoming-plan-box">
           {closestPlan ? (

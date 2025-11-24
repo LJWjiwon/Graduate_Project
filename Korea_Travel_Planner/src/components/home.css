@@ -180,6 +180,7 @@ body.home-page-body {
 .map-path.visited.selected {
     fill: #FF5722; 
     stroke-width: 1px;
+    stroke: #666;
 }
 
 /* [!!신규!!] 오른쪽 패널 컨테이너 (도장 통계 + 리포트) */
