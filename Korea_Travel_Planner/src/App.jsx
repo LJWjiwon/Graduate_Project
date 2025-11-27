@@ -1,11 +1,9 @@
-// App.jsx: 페이지 라우팅
+//페이지 라우팅
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './components/home.jsx'; // 공통 헤더
+import Home from './components/home.jsx'; 
 import Login from './components/login.jsx';
 import Plan from './components/plan.jsx';
 import Manage from './components/plan_manage.jsx';
-
-// import './styles/global.css'; // 전역 스타일
 
 function App() {
   return (
@@ -20,9 +18,6 @@ function App() {
         </Routes>
 
       </main>
-
-      {/* 모든 페이지에 공통으로 보일 푸터 */}
-      {/* <Footer /> */}
     </BrowserRouter>
   );
 }

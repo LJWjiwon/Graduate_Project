@@ -9,16 +9,10 @@ const Login = () => {
   const uiInstanceRef = useRef(null);
 
   useEffect(() => {
-
-    console.log('--- Login.js useEffect가 실행되었습니다. ---');
-
     if (uiInstanceRef.current) { return; }
     uiInstanceRef.current = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(auth);
 
     const uiConfig = {
-      // 1. signInSuccessUrl을 제거하여 수동 리디렉션 모드로 둡니다.
-      // signInSuccessUrl: '/home', 
-
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.EmailAuthProvider.PROVIDER_ID,
@@ -26,8 +20,6 @@ const Login = () => {
       ],
       signInFlow: 'popup',
       autoUpgradeAnonymousUsers: true,
-      // [!!핵심 수정!!] 익명 계정 병합/업그레이드 시도를 비활성화합니다.
-      // 이렇게 하면 'firebaseui/anonymous-upgrade-merge-conflict' 오류를 피할 수 있습니다.
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
 
       callbacks: {
@@ -38,12 +30,13 @@ const Login = () => {
 
           const userDocRef = db.collection('users').doc(user.uid);
 
+          //DB와 비교해서 저장
           try {
             const docSnap = await userDocRef.get();
 
             // 'docSnap.exists' 대신, 'docSnap.data()'에 'createdAt' 필드가 있는지
-            // (즉, 정상적으로 저장된 데이터가 있는지) 확인합니다.
-            // '?'(Optional Chaining)는 docSnap.data()가 null일 때 오류를 방지합니다.
+            // 정상적으로 저장된 데이터가 있는지 확인
+            // '?'(Optional Chaining)는 docSnap.data()가 null일 때 오류를 방지
             const docHasData = !!docSnap.data()?.createdAt;
 
             // 1. Auth가 새 유저라고 하거나 (isNewUserAuthFlag = true)
@@ -61,7 +54,7 @@ const Login = () => {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
               };
 
-              // set()은 덮어쓰기이므로, '텅 빈 껍데기'에도 안전합니다.
+              // set()은 덮어쓰기이므로, 텅 빈 껍데기에도 안전
               await userDocRef.set(userData);
               console.log("Firestore에 새 유저 정보 저장/덮어쓰기 완료");
 
@@ -70,6 +63,7 @@ const Login = () => {
             }
 
             // 수동 리디렉션
+            //로그인 성공 시 메인 화면으로
             window.location.href = '/home';
 
           } catch (error) {
