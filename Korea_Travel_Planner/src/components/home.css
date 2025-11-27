@@ -54,10 +54,6 @@ body.home-page-body {
   /* 이미지가 잘리지 않게 하려면 'contain'을, 채우려면 'cover'를 사용 */
   padding-left: 8%;
   object-position: 50% 80%;
-
-  /* 2. 중앙 정렬 */
-  /* display: block; 
-  margin: 0 auto;  */
 }
 
 /* 다가오는 일정 표시 박스 크기 및 정렬 */
@@ -65,24 +61,16 @@ body.home-page-body {
   width: 20%;
   text-align: center;
   margin-right: 120px;
-
-  /* [!!신규!!] 테두리 추가 */
   border: 1px solid #ddd;
-  /* 얇고 연한 회색 테두리 */
   border-radius: 8px;
-  /* 모서리 둥글게 */
   padding: 15px 10px;
-  /* 내부 여백 추가 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  /* 은은한 그림자 추가 */
 }
 
-/* D-day 글자 강조 (가장 중요) */
+/* D-day 글자 강조 */
 .d-day-large {
   font-size: 3.5rem;
-  /* 매우 크게 설정 */
   font-weight: 800;
-  /* 굵게 강조 */
   color: #4CAF50;
   /* 강조 색상 (초록색) */
   display: block;
@@ -102,7 +90,6 @@ body.home-page-body {
   color: #333;
   margin-bottom: 5px;
   cursor: pointer;
-  /* 클릭 가능한 요소임을 표시 */
 }
 
 .plan-date-small {
@@ -130,7 +117,7 @@ body.home-page-body {
 
 /* 지도 컨테이너 (왼쪽 영역) */
 .map-container-wrapper {
-    flex: 2; /* 지도 영역을 더 넓게 (예: 60%) */
+    flex: 2; /* 지도 영역을 더 넓게 */
     min-width: 400px;
     background-color: #fcfcfc;
     border: 1px solid #eee;
@@ -149,7 +136,7 @@ body.home-page-body {
   margin-top: 10px;
 }
 
-/* ⭐️ SVG Path 기본 스타일 (각 지역) */
+/* SVG Path 기본 스타일 (각 지역) */
 .map-path {
   fill: #E0E0E0;
   /* 기본 채우기 색상 (옅은 회색) */
@@ -160,30 +147,29 @@ body.home-page-body {
   transition: fill 0.2s;
 }
 
-/* ⭐️ [!!추가!!] 한 번이라도 방문한 지역의 색상 */
+/* 한 번이라도 방문한 지역의 색상 */
 .map-path.visited {
-    fill: #8BC34A !important; /* 연두색 (Lime Green) */
+    fill: #8BC34A !important; 
 }
 
-/* 마우스 호버(Hover) 시 스타일 */
 .map-path:hover {
   fill: #B0B0B0;
 }
 
-/* ⭐️ 클릭으로 '선택된' 지역 스타일 */
+/* 클릭으로 '선택된' 지역 스타일 */
 .map-path.selected {
   fill: #FF5722;
   /* 주황색으로 강조 */
 }
 
-/* ⭐️ 방문했고 선택된 지역 (선택 강조 유지) */
+/* 방문했고 선택된 지역 (선택 강조 유지) */
 .map-path.visited.selected {
     fill: #FF5722; 
     stroke-width: 1px;
     stroke: #666;
 }
 
-/* [!!신규!!] 오른쪽 패널 컨테이너 (도장 통계 + 리포트) */
+/* 오른쪽 패널 컨테이너 (도장 통계 + 리포트) */
 .right-panel {
     flex: 1; /* 오른쪽 영역이 지도의 절반 정도 차지 */
     display: flex;
@@ -241,25 +227,25 @@ body.home-page-body {
 
 .progress-bar {
     height: 100%;
-    background-color: #2196F3; /* 파란색 진행 색상 */
+    background-color: #2196F3; 
     border-radius: 5px;
     transition: width 0.5s ease;
 }
 
 .travel-report-container {
-    background-color: #ffffff; /* 배경을 흰색으로 변경 */
-    padding: 15px; /* 패딩을 줄여서 작게 만듦 */
-    border-radius: 8px; /* 모서리 둥글게 */
+    background-color: #ffffff; 
+    padding: 15px; 
+    border-radius: 8px; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid #eee; /* 경계선 추가 */
+    border: 1px solid #eee; 
 }
 
 .travel-report-container h3 {
-    font-size: 15px; /* 제목 크기 축소 */
+    font-size: 15px; 
     margin-top: 0;
     margin-bottom: 10px;
     color: #333;
-    border-bottom: 1px solid #ddd; /* 경계선 두께 축소 */
+    border-bottom: 1px solid #ddd; 
     padding-bottom: 5px;
     font-weight: 600;
 }
@@ -273,30 +259,28 @@ body.home-page-body {
 
 /* 개별 리포트 카드 스타일 */
 .report-card {
-    /* flex 대신 grid 아이템으로 사용 */
-    background-color: #f9f9f9; /* 카드 배경색 */
+    background-color: #f9f9f9; 
     border-radius: 6px;
-    padding: 10px; /* 패딩 축소 */
+    padding: 10px; 
     text-align: center;
-    box-shadow: none; /* 그림자 제거 또는 아주 약하게 */
+    box-shadow: none; 
 }
 
 .report-card h4 {
-    font-size: 13px; /* 항목 이름 크기 축소 */
+    font-size: 13px; 
     color: #888;
     margin-bottom: 2px;
     font-weight: 500;
 }
 
 .report-value strong {
-    font-size: 20px; /* 값 크기 축소 */
+    font-size: 20px; 
     color: #007bff;
     font-weight: 700;
 }
 
-/* --------------------------------- */
+
 /* 미디어 쿼리 (화면이 작아질 때 1단으로 변경) */
-/* --------------------------------- */
 @media (max-width: 768px) {
     .map-and-stamp-layout {
         flex-direction: column; /* 1단으로 변경 */
@@ -309,9 +293,7 @@ body.home-page-body {
     }
 }
 
-/* home.css 파일에 추가 */
 .graph-section-title {
-    /* padding: 15px 90px;  */
     padding-left: 90px;
     padding-top: 30px;
     margin-top: 20px;
@@ -324,7 +306,7 @@ body.home-page-body {
 /* 그래프 섹션 레이아웃 (2단 그리드) */
 .graph-section-layout {
     display: grid;
-    /* 작은 화면에서는 1단, 큰 화면에서는 2단으로 조정할 수 있습니다. */
+    /* 작은 화면에서는 1단, 큰 화면에서는 2단으로 조정 */
     grid-template-columns: 1fr; 
     gap: 0px;
     padding: 20px;
@@ -357,7 +339,7 @@ body.home-page-body {
     font-weight: 600;
 }
 
-/* Chart.js 캔버스 자체의 크기는 부모 div가 관리합니다. */
+/* Chart.js 캔버스 자체의 크기는 부모 div가 관리 */
 .monthly-bar-chart, 
 .category-pie-chart {
     /* 높이 일관성을 위해 최소 높이 설정 */

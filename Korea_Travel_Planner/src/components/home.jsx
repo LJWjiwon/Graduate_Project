@@ -9,8 +9,7 @@ import MonthlyBarChart from './MonthlyBarChart.jsx';
 import CategoryPieChart from './CategoryPieChart.jsx';
 import HeaderImage from '../assets/Trip_img.png';
 
-// 2. Firebase 관련 모듈 import
-import { db, auth } from '../firebase.js'; // 방금 만든 설정 파일
+import { db, auth } from '../firebase.js'; 
 import {
   collection,
   doc,
@@ -21,16 +20,14 @@ import {
   where
 } from "firebase/firestore";
 
-const MIN_STAMP_COUNT = 5; // 도장 획득 최소 횟수 설정
-
-// [!!신규!!] 1. 여행 리포트 데이터를 표시하는 컴포넌트
+// 여행 리포트 데이터를 표시하는 컴포넌트
 const TravelReport = ({ reportData }) => {
   const { totalTrips, thisYearTrips, mostVisitedRegion, averageDuration } = reportData;
 
   // 평균 기간 포맷팅 (예: 2박 3일)
   const avgDurationStr = averageDuration > 0
     ? `${Math.floor(averageDuration)}박 ${Math.floor(averageDuration) + 1}일`
-    : '집계 중...';
+    : '집계 중...';   //일정 없을 경우
 
   return (
     <div className="travel-report-container">
@@ -59,11 +56,13 @@ const TravelReport = ({ reportData }) => {
   );
 };
 
+const MIN_STAMP_COUNT = 5; // 도장 획득 최소 횟수 설정
+
+//선택된 지역의 방문횟수 확인 및 도장 획득
 const StampView = ({ selectedRegion, visitedRegionsData }) => {
-  // 1. 현재 선택된 지역의 방문 횟수를 가져옵니다.
-  const visitCount = visitedRegionsData[selectedRegion] || 0;
-  const isStamped = visitCount >= MIN_STAMP_COUNT;
-  const visitsRemaining = MIN_STAMP_COUNT - visitCount;
+  const visitCount = visitedRegionsData[selectedRegion] || 0;   //선택한 지역의 방문횟수 가져옴
+  const isStamped = visitCount >= MIN_STAMP_COUNT;  //도장획득
+  const visitsRemaining = MIN_STAMP_COUNT - visitCount;   //도장획득까지 남은
 
   if (!selectedRegion) {
     return (
@@ -83,7 +82,7 @@ const StampView = ({ selectedRegion, visitedRegionsData }) => {
       <div className="stamp-area">
         {isStamped ? (
           <div className="stamp-achieved">
-            {/* 5회 이상 방문 도장 이미지 대체 */}
+            {/* 5회 이상 방문 도장 */}
             <div className="stamp-icon">🎉</div>
             <p><strong>도장 획득 완료!</strong></p>
           </div>
@@ -103,12 +102,6 @@ const StampView = ({ selectedRegion, visitedRegionsData }) => {
   );
 };
 
-/**
- * 한국 주소 문자열에서 시/군/구 이름을 추출합니다.
- * 예: "전북특별자치도 김제시 금산면..." -> "김제시"
- * @param {string} address 전체 주소 문자열
- * @returns {string | null} 추출된 시/군/구 이름 또는 찾지 못했을 경우 null
- */
 
 /**
  * 장소 카테고리 문자열에서 최상위 카테고리 이름을 추출합니다.
@@ -124,6 +117,12 @@ const extractTopCategory = (categoryName) => {
   return parts.length > 0 ? parts[0].trim() : null;
 };
 
+/**
+ * 한국 주소 문자열에서 시/군/구 이름을 추출
+ * 예: "전북특별자치도 김제시 금산면..." -> "김제시"
+ * @param {string} address 전체 주소 문자열
+ * @returns {string | null} 추출된 시/군/구 이름 또는 찾지 못했을 경우 null
+ */
 
 const extractRegionFromAddress = (address) => {
   if (!address) return null;
@@ -149,26 +148,26 @@ const extractRegionFromAddress = (address) => {
   return null; // 유효한 지역을 찾지 못한 경우
 };
 
+
 // 메인 페이지 컴포넌트
 const Home = () => {
-  // 모달을 켜고 끄는 state를 추가합니다.
+  // 모달을 켜고 끄는 state를 추가
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Home 컴포넌트 최상단에서 useNavigate를 호출합니다.
   const navigate = useNavigate();
-  // [!!신규!!] 가장 가까운 일정을 저장할 state
+  // 가장 가까운 일정을 저장할 state
   const [closestPlan, setClosestPlan] = useState(null);
-  //도장 방문횟수 저장
   const [visitedRegionsData, setVisitedRegionsData] = useState({}); // 시/군/구별 방문 횟수 집계 데이터 State
-  // [!!통합!!] 지도 관련 State: 현재 선택된 지역
+  // 현재 선택된 지역
   const [selectedRegion, setSelectedRegion] = useState(null);
-  // [!!신규!!] Firebase Auth 상태를 저장하는 State 추가
+  // Firebase Auth 상태를 저장하는 State 추가
   const [currentUser, setCurrentUser] = useState(null);
   // 월별 여행 횟수 데이터 (1월: 5, 2월: 2 등)
   const [monthlyTrips, setMonthlyTrips] = useState(new Array(12).fill(0));
   // 장소 카테고리별 방문 횟수 데이터 ({ '문화,예술': 10, '여행,관광': 25, ... })
   const [categoryVisits, setCategoryVisits] = useState({});
 
-  // [!!신규!!] 2. 여행 리포트 데이터를 위한 State
+  //여행 리포트 데이터를 위한 State
   const [reportData, setReportData] = useState({
     totalTrips: 0,
     thisYearTrips: 0,
@@ -176,19 +175,19 @@ const Home = () => {
     averageDuration: 0,
   });
 
-  // [!!수정!!] 0. Firebase Auth 상태 변화 감지 및 사용자 정보 업데이트
+  // Firebase Auth 상태 변화 감지 및 사용자 정보 업데이트
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
-      // 로그인 상태가 변경될 때마다 currentUser state를 업데이트합니다.
+      // 로그인 상태가 변경될 때마다 currentUser state를 업데이트
       setCurrentUser(user);
-      // 사용자 정보가 바뀌면 두 개의 데이터 로딩 useEffect도 다시 실행되어야 합니다.
+      // 사용자 정보가 바뀌면 두 개의 데이터 로딩 useEffect도 다시 실행
     });
     return () => unsubscribe();
   }, []);
 
-  // [!!수정!!] ⭐️ 가장 가까운 다가오는 일정을 불러오는 useEffect
+  // 가장 가까운 다가오는 일정을 불러오는 useEffect
   useEffect(() => {
-    // [!!핵심!!] 로그인된 사용자 정보가 없으면 실행하지 않습니다.
+    // 로그인된 사용자 정보가 없으면 실행 x
     if (!currentUser) {
       setClosestPlan(null); // 혹시 남아있을 수 있는 이전 사용자 데이터 초기화
       return;
@@ -212,10 +211,10 @@ const Home = () => {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-
           const startDate = data.startDate.toDate();
           startDate.setHours(0, 0, 0, 0);
 
+          //오늘과 비교해서 남은 일정 중 
           if (startDate >= today) {
             const diffTime = startDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -239,9 +238,9 @@ const Home = () => {
     };
 
     fetchClosestPlan();
-  }, [currentUser]); // [!!핵심!!] currentUser가 변경될 때마다 재실행
+  }, [currentUser]); // currentUser가 변경될 때마다 재실행
 
-  // [!!수정!!] 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계 및 리포트 계산
+  // 완료된 일정만 필터링하고 주소에서 지역을 추출하여 집계 및 리포트 계산
   useEffect(() => {
     if (!currentUser) {
       setVisitedRegionsData({});
@@ -257,30 +256,24 @@ const Home = () => {
         );
 
         const querySnapshot = await getDocs(plansQuery);
-
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const currentYear = today.getFullYear();
-
         const counts = {}; // 지역 방문 횟수 집계
 
         let completedTrips = 0;
         let completedTripsThisYear = 0;
         let totalDurationDays = 0;
-
-        // 기존 변수 대신 배열로 변경하거나, 아래 로직에서 바로 계산합니다.
         let maxVisits = 0;
-        let mostVisitedRegions = []; // [!!핵심 수정!!] 공동 1위 지역을 저장할 배열
-        // [!!신규!!] 그래프 데이터 집계 변수 추가
+        let mostVisitedRegions = []; // 공동 1위 지역을 저장할 배열
+        // 그래프 데이터 집계 변수 
         const monthlyCounts = new Array(12).fill(0); // 0월(1월)~11월(12월)
         const categoryCounts = {}; // 카테고리별 방문 횟수
 
         for (const planDoc of querySnapshot.docs) {
           const planData = planDoc.data();
-
           const startDate = planData.startDate.toDate();
           const duration = planData.duration || 1;
-
           const endDate = new Date(startDate.getTime());
           endDate.setDate(startDate.getDate() + duration - 1);
           endDate.setHours(0, 0, 0, 0);
@@ -294,7 +287,7 @@ const Home = () => {
               completedTripsThisYear++;
             }
 
-            // [!!신규!!] 월별 여행 횟수 집계
+            // 월별 여행 횟수 집계
             const endMonth = endDate.getMonth(); // 0 (1월) ~ 11 (12월)
             // 완료된 여행의 '종료월'을 기준으로 집계 (당해년도 여행만)
             if (endDate.getFullYear() === currentYear) {
@@ -316,7 +309,7 @@ const Home = () => {
                   counts[region] = (counts[region] || 0) + 1;
                 }
 
-                // [!!신규!!] 장소 카테고리 집계
+                // 장소 카테고리 집계
                 const topCategory = extractTopCategory(place.category_name);
                 if (topCategory) {
                   categoryCounts[topCategory] = (categoryCounts[topCategory] || 0) + 1;
@@ -326,7 +319,7 @@ const Home = () => {
           }
         }
 
-        // [!!수정된 로직!!] 최다 방문 지역 (공동 1위 포함) 계산
+        // 최다 방문 지역 (공동 1위 포함) 계산
         for (const region in counts) {
           if (counts[region] > maxVisits) {
             // 현재 지역이 이전 최대값보다 크면, 최대값과 배열을 리셋
@@ -344,7 +337,6 @@ const Home = () => {
 
         // 최종 표시될 문자열 생성: '서울시, 부산시, 대구시'
         const mostVisitedRegionName = mostVisitedRegions.join(', ');
-
         const averageDuration = completedTrips > 0 ? totalDurationDays / completedTrips : 0;
 
 
@@ -357,7 +349,7 @@ const Home = () => {
           averageDuration: averageDuration,
         });
 
-        // [!!신규!!] 그래프 State 업데이트
+        // 그래프 State 업데이트
         setMonthlyTrips(monthlyCounts);
         setCategoryVisits(categoryCounts);
 
@@ -378,55 +370,51 @@ const Home = () => {
     return `${year}.${month}.${day}`;
   };
 
-  // [!!통합!!] 지도 클릭 핸들러 (KoreaMap.jsx에서 호출됨)
+  // 지도 클릭 핸들러 (KoreaMap.jsx에서 호출됨)
   const handleRegionClick = (regionIdString) => {
-
-    // 이젠 e.target.id가 아니라, regionIdString에 이미 ID 값이 들어있습니다.
     const regionId = regionIdString;
 
-    // ⭐️ (핵심) regionId가 유효한지 먼저 확인합니다. 
-    // e.target이 <svg> 같은 상위 요소일 경우 regionId가 빈 문자열일 수 있습니다.
+    // regionId가 유효한지 먼저 확인
     if (regionId && regionId.length > 0) {
       setSelectedRegion(regionId);
       // alert(`선택한 지역: ${regionId}`);
     }
   };
 
+  // 일정 추가
   const handleCreatePlan = async (data) => {
-    // data 에는 { planName, startDate, duration } 객체가 들어옵니다.
+    // data 에는 { planName, startDate, duration } 객체가 들어옴
 
     const user = auth.currentUser; // 현재 로그인된 사용자 정보
 
-    // 4. 로그인이 되어있는지 확인 (ownerId를 위해 필수)
+    // 로그인이 되어있는지 확인 (ownerId를 위해 필수)
     if (!user) {
       alert("일정을 생성하려면 로그인이 필요합니다.");
       return;
     }
 
-    // ⭐️ 새로 생성될 Plan의 문서 참조 (ID를 미리 가져옴)
+    // 새로 생성될 Plan의 문서 참조 (ID를 미리 가져옴)
     const newPlanRef = doc(collection(db, "plans"));
 
+    //일정추가 DB
     try {
-      // 5. 모달에서 받은 데이터 (문자열)를 Firebase 형식으로 변환
+      // 모달에서 받은 데이터 (문자열)를 Firebase 형식으로 변환
       const { planName, startDate, duration } = data;
-
       // <input type="date"> (YYYY-MM-DD) 문자열을 JS Date 객체로 변환
       const baseDate = new Date(startDate);
       const planDuration = Number(duration); // 숫자로 변환
-
-      // 6. 배치(batch) 쓰기 시작 (여러 문서를 한 번에 쓰기 위함)
+      // 배치(batch) 쓰기 시작 (여러 문서를 한 번에 쓰기 위함)
       const batch = writeBatch(db);
 
       const planData = {
         name: planName,
         startDate: Timestamp.fromDate(baseDate), // Firestore Timestamp 타입으로 변환
         duration: planDuration,
-        ownerId: user.uid // 현재 로그인한 사용자 ID
-        // members 필드는 요청대로 제외
+        ownerId: user.uid 
       };
       batch.set(newPlanRef, planData); // 배치에 추가
 
-      // 8. (배치 2~N) duration(일수)만큼 'days' 하위 컬렉션 문서 생성
+      // duration(일수)만큼 'days' 하위 컬렉션 문서 생성
       for (let i = 1; i <= planDuration; i++) {
         // 각 '일차'의 실제 날짜 계산 (시작일 + (i-1)일)
         const dayDate = new Date(baseDate.getTime());
@@ -444,20 +432,17 @@ const Home = () => {
         batch.set(newDayRef, dayData); // 배치에 추가
       }
 
-      // 9. 모든 배치 작업을 한 번에 커밋(전송)
+      // 모든 배치 작업을 한 번에 커밋(전송)
       await batch.commit();
 
       alert("새 여행 일정이 생성되었습니다!");
-      // 7. 👈 성공 직후, navigate 함수를 호출하여 페이지 이동!
-      // newPlanRef.id 를 URL 파라미터로 넘겨줍니다.
+      
       navigate(`/plan/${newPlanRef.id}`);
 
     } catch (error) {
       console.error("일정 생성 중 오류 발생:", error);
       alert("일정 생성에 실패했습니다. 다시 시도해주세요.");
     }
-
-    // (성공/실패와 관계없이 모달은 Plan_add.jsx의 onSubmit에서 닫힙니다)
   };
 
   useEffect(() => {
@@ -479,12 +464,12 @@ const Home = () => {
 
       <div className="hero-section">
         <img src={HeaderImage} alt="여행지 이미지" className="hero-image"></img>
-        {/* [!!신규!!] 다가오는 일정 표시 영역 */}
+        {/* 다가오는 일정 표시 영역 */}
         <div className="upcoming-plan-box">
           {closestPlan ? (
             // 다가오는 일정이 있을 경우
             <>
-              {/* D-day 표시: 글자가 크고 강조됨 */}
+              {/* D-day 표시 */}
               <div className="d-day-text">
                 {closestPlan.dDay === 0 ? (
                   <strong className="d-day-large d-day-today">D-DAY</strong>
@@ -511,7 +496,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ⭐️ [!!핵심!!] 지도와 도장뷰를 감싸는 2단 레이아웃 */}
+      {/* 지도와 도장뷰를 감싸는 2단 레이아웃 */}
       <main className="content-area map-and-stamp-layout">
 
         {/* 1. 지도 영역 (왼쪽) */}
@@ -520,28 +505,25 @@ const Home = () => {
           <KoreaMap
             onRegionClick={handleRegionClick}
             selectedRegion={selectedRegion}
-            // 💡 지도를 색칠하기 위해 집계 데이터를 props로 전달해야 합니다.
+            // 지도를 색칠하기 위해 집계 데이터를 props로 전달
             visitedRegionsData={visitedRegionsData}
           />
         </div>
 
         {/* 2. 오른쪽 열 (도장 통계와 리포트) */}
         <div className="right-panel">
-          {/* 2-1. 도장 통계 영역 (가장 위) */}
+          {/* 도장 통계 영역 (가장 위) */}
           <StampView
             selectedRegion={selectedRegion}
             visitedRegionsData={visitedRegionsData}
           />
 
-          {/* [!!수정된 위치!!] 2-2. 여행 리포트 표시 (도장 통계 바로 밑) */}
+          {/* 여행 리포트 표시 (도장 통계 바로 밑) */}
           <TravelReport reportData={reportData} />
         </div>
       </main>
-
-      {/* ⭐️ [!!신규!!] 그래프 섹션 제목 추가 */}
+      
       <h2 className="graph-section-title">📊 그래프 통계</h2>
-      {/* ⭐️ [!!신규!!] 그래프를 표시할 새로운 섹션 (지도 밑) */}
-      {/* 2단으로 구성 */}
       <section className="graph-section-layout">
         {/* 1. 월별 막대 그래프 (왼쪽) */}
         <MonthlyBarChart monthlyCounts={monthlyTrips} />

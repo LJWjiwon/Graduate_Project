@@ -262,5 +262,5 @@ const KoreaMap = ({ onRegionClick, selectedRegion, visitedRegionsData = {} }) =>
     );
 };
 
-export default KoreaMap; // Home.jsx에서 불러오기 위해 export 합니다.
+export default KoreaMap; // Home.jsx에서 불러오기 위해 export 
 
