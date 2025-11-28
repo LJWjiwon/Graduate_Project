@@ -2,7 +2,7 @@
 
 body {
   margin: 0;
-  background-color: #f8f9fa; /* 전체 페이지 배경색 */
+  background-color: #f8f9fa; 
 }
 
 .schedule-container {
@@ -32,13 +32,13 @@ body {
   font-weight: bold;
 }
 
-/* [!!추가!!] 탭 네비게이션 스타일 */
+/* 탭 네비게이션 스타일 */
 .plan-filter-tabs {
     display: flex;
     justify-content: space-around; /* 탭을 균등하게 배치 */
     padding: 10px 0;
     margin-bottom: 15px; /* 일정 목록과의 간격 */
-    border-bottom: 1px solid #eee; /* 구분선 */
+    border-bottom: 1px solid #eee; 
 }
 
 .plan-filter-tabs button {

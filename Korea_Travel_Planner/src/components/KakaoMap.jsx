@@ -9,12 +9,11 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
     const infowindow = useRef(null);
     // Geocoder(주소 변환) 서비스를 위한 ref
     const geocoder = useRef(null); 
-
-    // [!!신규!!] 1. onAddPlace prop을 저장할 ref 생성
-    // 이렇게 하면 onAddPlace prop이 변경될 때마다 ref의 .current 값이 항상 최신으로 유지됩니다.
+    // onAddPlace prop을 저장할 ref 생성
+    // 이렇게 하면 onAddPlace prop이 변경될 때마다 ref의 .current 값이 항상 최신으로 유지
     const onAddPlaceRef = useRef(onAddPlace);
 
-    // [!!신규!!] 2. onAddPlace prop이 바뀔 때마다 ref의 .current 값을 업데이트
+    //onAddPlace prop이 바뀔 때마다 ref의 .current 값을 업데이트
     useEffect(() => {
         onAddPlaceRef.current = onAddPlace;
     }, [onAddPlace]);
@@ -23,7 +22,7 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
     const [places, setPlaces] = useState([]);
     const [markers, setMarkers] = useState([]);
 
-    // [useCallback 적용]
+    // 상세보기
     const handleShowDetail = useCallback((place) => {
         if (place.place_url) {
             window.open(place.place_url, '_blank');
@@ -32,11 +31,8 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         }
     }, []);
 
-    // [!!수정!!] 3. '장소 추가' 버튼 클릭 시
+    // '장소 추가' 버튼 클릭 시
     const handleAddPlace = useCallback((place) => {
-        // [수정] prop(onAddPlace) 대신 ref(onAddPlaceRef.current)를 호출합니다.
-        // 이렇게 하면 useCallback의 의존성 배열이 비어 있어도,
-        // 항상 최신 onAddPlace 함수를 호출할 수 있습니다.
         if (onAddPlaceRef.current) {
             onAddPlaceRef.current(place);
         } else {
@@ -45,8 +41,7 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         }
     }, []);
 
-    // [useCallback 적용] 인포윈도우 (이름, 주소, 번호, 버튼 모두 포함)
-    // (이전 코드의 createAddressInfoWindowContent 함수는 삭제)
+    // 지도 인포윈도우
     const createInfoWindowContent = useCallback((place) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'infowindow-wrap'; 
@@ -92,8 +87,7 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         return wrapper;
     }, [handleShowDetail, handleAddPlace]);
 
-
-    // [수정] useEffect
+    // 카카오맵 로드 및 렌더링 
     useEffect(() => {
         const loadKakaoMapScript = () => {
             if (window.kakao && window.kakao.maps) {
@@ -129,17 +123,17 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                         disableAutoPan: true 
                     });
 
-                    // --- [핵심 수정] 지도 클릭 이벤트 (2단계 검색) ---
+                    // 지도 클릭 이벤트 
                     window.kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
                         
                         const latLng = mouseEvent.latLng; 
                         infowindow.current.close();
                         setPlaces([]); 
 
-                        // 1단계: 좌표 -> 주소 변환
+                        // 좌표 -> 주소 변환
                         geocoder.current.coord2Address(latLng.getLng(), latLng.getLat(), (result, status) => {
                             
-                            // 1단계 실패 시
+                            // 실패 시
                             if (status !== window.kakao.maps.services.Status.OK) {
                                 alert('클릭한 위치의 주소 정보를 가져올 수 없습니다.');
                                 setMarkers(current => { // 마커 클리어
@@ -149,15 +143,15 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                                 return;
                             }
                             
-                            // 1단계 성공 -> 주소 획득
+                            // 성공 -> 주소 획득
                             const addressName = result[0].road_address 
                                 ? result[0].road_address.address_name 
                                 : result[0].address.address_name;
 
-                            // 2단계: 주소 -> 장소 검색 (Places 서비스)
+                            // 주소 -> 장소 검색 (Places 서비스)
                             placesService.current.keywordSearch(addressName, (data, status) => {
                                 
-                                // 2단계 실패 시
+                                // 실패 시
                                 if (status !== window.kakao.maps.services.Status.OK || data.length === 0) {
                                     alert('클릭한 위치의 장소 정보를 찾지 못했습니다.');
                                     setMarkers(current => { // 마커 클리어
@@ -167,7 +161,7 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                                     return;
                                 }
 
-                                // 2단계 성공 -> 'place' 객체 획득!
+                                // 성공 -> 'place' 객체 획득
                                 const place = data[0]; 
 
                                 // 새 마커 생성
@@ -176,7 +170,7 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                                     map: map
                                 });
 
-                                // [수정] 'place' 객체로 '풀 버전' 인포윈도우 생성
+                                // 'place' 객체로 풀 버전 인포윈도우 생성
                                 const content = createInfoWindowContent(place);
                                 infowindow.current.setContent(content);
                                 infowindow.current.open(map, newMarker);
@@ -196,7 +190,6 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                             });
                         });
                     });
-                    // ---------------------------------------------
 
                     setTimeout(() => {
                         map.relayout();
@@ -206,16 +199,15 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         };
 
         loadKakaoMapScript();
-    }, [createInfoWindowContent]); // <-- createInfoWindowContent를 의존성 배열에 추가 (ESLint 경고 및 버그 수정)
+    }, [createInfoWindowContent]); 
 
 
-    // --- 2️⃣ 일정 오버레이 업데이트용 useEffect (수정된 것) ---
+    // --- 일정 오버레이 업데이트용 useEffect ---
     useEffect(() => {
         // 맵 인스턴스가 준비되었는지 확인
         if (!mapInstance.current) return;
 
-        // 1. 새로운 currentDayPlaces 배열을 기반으로 새 커스텀 오버레이를 생성합니다.
-        // (이 newItineraryOverlays는 이 함수 안에서만 쓰이는 '지역 변수'입니다.)
+        // 새로운 currentDayPlaces 배열을 기반으로 새 커스텀 오버레이를 생성
         const newItineraryOverlays = currentDayPlaces.map((place, index) => {
             
             const position = new window.kakao.maps.LatLng(place.y, place.x);
@@ -225,16 +217,16 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
             content.innerHTML = index + 1; 
 
             const customOverlay = new window.kakao.maps.CustomOverlay({
-                map: mapInstance.current, // <-- 생성과 동시에 지도에 추가
+                map: mapInstance.current, // 생성과 동시에 지도에 추가
                 position: position,
                 content: content,
                 yAnchor: 0.5, 
                 zIndex: 10    
             });
 
-            // 2. 오버레이(숫자)에 클릭 이벤트 추가
+            // 오버레이(숫자)에 클릭 이벤트 추가
             content.onclick = () => {
-                // (선택) 다른 임시 마커/목록/인포윈도우 닫기
+                // 다른 임시 마커/목록/인포윈도우 닫기
                 infowindow.current.close();
                 setMarkers(current => {
                     current.forEach(m => m.setMap(null));
@@ -254,37 +246,30 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
             return customOverlay;
         });
 
-        // 3. [핵심] 클린업(cleanup) 함수를 반환합니다.
-        // 이 함수는 'currentDayPlaces'가 바뀌어서 이 useEffect가 
-        // *다음에* 실행되기 직전에 먼저 실행됩니다.
+        // 클린업 함수를 반환
         return () => {
-            // 이전에 만들었던 오버레이(newItineraryOverlays)를 지도에서 제거합니다.
+            // 이전에 만들었던 오버레이(newItineraryOverlays)를 지도에서 제거
             newItineraryOverlays.forEach(overlay => overlay.setMap(null));
         };
-        
-    // 의존성 배열은 state가 빠졌으므로 깔끔해집니다.
     }, [currentDayPlaces, createInfoWindowContent]);
 
-    // --- [!!신규!!] 3️⃣ panTarget prop 변경 감지 및 맵 이동용 useEffect ---
+    // --- panTarget prop 변경 감지 및 맵 이동용 useEffect ---
     useEffect(() => {
         // 맵 인스턴스가 준비되었고, panTarget이 유효한 값일 때만 실행
         if (mapInstance.current && panTarget && panTarget.y && panTarget.x) {
             
-            // 1. 이동할 새 LatLng 객체 생성
+            // 이동할 새 LatLng 객체 생성
             const position = new window.kakao.maps.LatLng(panTarget.y, panTarget.x);
             
-            // 2. 지도를 부드럽게 이동 (panTo)
+            // 지도를 부드럽게 이동 (panTo)
             mapInstance.current.panTo(position);
-
-            // 3. (선택 사항) 맵 레벨을 확대
-            // mapInstance.current.setLevel(4);
         }
     
-    // 이 훅은 'panTarget' prop이 바뀔 때만 실행됩니다.
+    // 'panTarget' prop이 바뀔 때만 실행
     }, [panTarget]);
 
 
-    // [useCallback 적용] handleSearch
+    // 지도 검색 
     const handleSearch = useCallback((e) => {
         e.preventDefault();
         if (!keyword.trim()) {
@@ -321,11 +306,9 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                             return [marker]; 
                         });
                         
-                        // [수정] createInfoWindowContent 호출 (버그 수정)
                         const content = createInfoWindowContent(place);
                         infowindow.current.setContent(content);
                         infowindow.current.open(mapInstance.current, marker);
-                        
                         mapInstance.current.panTo(position);
                         
                         setPlaces([]);
@@ -345,10 +328,10 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
                 setPlaces([]);
             }
         });
-    }, [keyword, markers, createInfoWindowContent]); // 의존성 배열
+    }, [keyword, markers, createInfoWindowContent]); 
 
 
-    // [useCallback 적용] handlePlaceClick (검색 목록 클릭)
+    // 검색 목록 클릭
     const handlePlaceClick = useCallback((place) => {
         const map = mapInstance.current;
         const position = new window.kakao.maps.LatLng(place.y, place.x);
@@ -364,7 +347,6 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         map.setCenter(position);
         map.setLevel(4); 
 
-        // [수정] createInfoWindowContent 호출 (버그 수정)
         const content = createInfoWindowContent(place); 
         infowindow.current.setContent(content);
         infowindow.current.open(map, newMarker);
@@ -377,9 +359,8 @@ const Map = ({ onAddPlace, currentDayPlaces, panTarget }) => {
         });
 
         setPlaces([]);
-    }, [markers, createInfoWindowContent]); // 의존성 배열
+    }, [markers, createInfoWindowContent]);
 
-    // JSX (반환값)
     return (
         <div className="map-search-wrapper">
             <div className="search-form-container">

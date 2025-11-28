@@ -4,17 +4,17 @@ import './plan_add_modify.css';
 /**
  * 새 일정 생성 모달 컴포넌트
  * @param {object} props
- * @param {boolean} props.isOpen - 모달이 열려있는지 여부 (필수)
- * @param {function} props.onClose - 닫기 버튼을 누를 때 호출될 함수 (필수)
- * @param {function} props.onSubmit - 확인 버튼을 누를 때 호출될 함수 (data 객체 전달) (필수)
- * @param {object | null} [props.initialData] - (선택) 수정 모드일 때 사용할 초기 데이터 { name, startDate, duration }
+ * @param {boolean} props.isOpen - 모달이 열려있는지 여부 
+ * @param {function} props.onClose - 닫기 버튼을 누를 때 호출될 함수
+ * @param {function} props.onSubmit - 확인 버튼을 누를 때 호출될 함수 (data 객체 전달) 
+ * @param {object | null} [props.initialData] - 수정 모드일 때 사용할 초기 데이터 { name, startDate, duration }
  */
 function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
   const [planName, setPlanName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [duration, setDuration] = useState(1);
 
-  // [!!신규!!] 3. 수정 모드/생성 모드 판별
+  // 수정 모드/생성 모드 판별
   const isEditMode = !!initialData;
 
   const resetForm = () => {
@@ -23,7 +23,7 @@ function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
     setDuration(1);
   };
 
-  // [!!신규!!] 4. 모달이 열릴 때 initialData로 폼 채우기
+  // 모달이 열릴 때 initialData로 폼 채우기
   useEffect(() => {
     // 모달이 열릴 때
     if (isOpen) {
@@ -45,10 +45,8 @@ function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
       alert('일정 이름과 시작일을 모두 입력해주세요.');
       return;
     }
-    // [!!수정!!] 5. duration도 객체에 포함 (이전 코드에서 누락된 것 같아 추가합니다)
+    // duration도 객체에 포함 
     onSubmit({ planName, startDate, duration: Number(duration) });
-    // (참고: resetForm()과 onClose()는 Home.jsx의 핸들러에서 이미 호출하고 있으므로
-    // 여기서 호출하지 않아도 되지만, 안전을 위해 남겨둡니다.)
     resetForm();
     onClose();
   };
@@ -66,11 +64,10 @@ function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
     <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
-        {/* [!!수정!!] 6. 모드에 따라 제목 변경 */}
+        {/* 모드에 따라 제목 변경 */}
         <h3>{isEditMode ? '일정 수정' : '새 여행 일정 만들기'}</h3>
 
         <form onSubmit={handleSubmit}>
-          {/* ... (planName, startDate, duration input 필드는 동일) ... */}
           <div className="form-group">
             <label htmlFor="planName">일정 이름</label>
             <input
@@ -114,7 +111,7 @@ function CreatePlanModal({ isOpen, onClose, onSubmit, initialData }) {
               취소
             </button>
 
-            {/* [!!수정!!] 7. 모드에 따라 버튼 텍스트 변경 */}
+            {/* 모드에 따라 버튼 텍스트 변경 */}
             <button type="submit" className="submit-button">
               {isEditMode ? '수정' : '확인'}
             </button>

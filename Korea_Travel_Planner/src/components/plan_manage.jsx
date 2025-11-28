@@ -19,9 +19,9 @@ const ScheduleItem = ({ title, dateRange, duration, onClick, onDelete, onEdit })
         <p className="schedule-date">{`${dateRange} (${duration})`}</p>
       </div>
       <div className="schedule-actions">
-        {/* [!!수정!!] 5. 수정 버튼에 onEdit 함수 연결 */}
+        {/* 수정 버튼에 onEdit 함수 연결 */}
         <button className="icon-button" onClick={(e) => {
-          e.stopPropagation(); // (중요) 페이지 이동 방지
+          e.stopPropagation(); // 페이지 이동 방지
           onEdit(); // 부모(Manage)로부터 전달받은 수정 함수 호출
         }}>✏️</button>
 
@@ -40,16 +40,15 @@ const Manage = () => {
 
   // Firestore에서 불러온 일정 목록을 저장할 state
   const [myPlans, setMyPlans] = useState([]);
-  // [!!신규!!] 5. 로딩 상태를 관리할 state (선택 사항이지만 권장)
+  // 로딩 상태를 관리할 state 
   const [isLoading, setIsLoading] = useState(true);
-  // [!!추가!!] 1. 현재 활성화된 탭 상태 ('all', 'scheduled', 'in_progress', 'completed')
+  // 현재 활성화된 탭 상태 ('all', 'scheduled', 'in_progress', 'completed')
   const [activeTab, setActiveTab] = useState('all');
-
-  // [!!신규!!] 6. 수정 모달 상태 관리
+  // 수정 모달 상태 관리
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null); // { id, rawData: { name, startDate, duration } }
 
-  // 6. 날짜 포맷팅을 위한 헬퍼 함수 (컴포넌트 바깥이나 내부에)
+  // 날짜 포맷팅을 위한 헬퍼 함수 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate(); // Firestore Timestamp -> JS Date
@@ -59,15 +58,15 @@ const Manage = () => {
     return `${y}.${m}.${d}`;
   };
 
-  // [!!추가!!] 2. 일정의 시작일과 종료일 (Date 객체, 자정 기준)을 계산하는 헬퍼 함수
+  // 일정의 시작일과 종료일을 계산하는 헬퍼 함수
   const getPlanDates = (plan) => {
     const { startDate, duration } = plan.rawData; // rawData: {startDate: 'YYYY-MM-DD', duration: number}
 
-    // 1. 계획 시작일 (Date 객체, 자정)
+    // 계획 시작일 (Date 객체, 자정)
     const parts = startDate.split('-').map(Number);
     const planStartDate = new Date(parts[0], parts[1] - 1, parts[2]); // MM은 0부터 시작
 
-    // 2. 계획 종료일 (Date 객체, 자정)
+    // 계획 종료일 (Date 객체, 자정)
     const planEndDate = new Date(planStartDate.getTime());
     // duration이 N일이면 N-1일을 더해야 종료일이 됩니다.
     planEndDate.setDate(planStartDate.getDate() + duration - 1);
@@ -75,7 +74,7 @@ const Manage = () => {
     return { planStartDate, planEndDate };
   };
 
-  // [!!추가!!] 3. 일정의 현재 상태를 분류하는 함수
+  // 일정의 현재 상태를 분류하는 함수
   const getPlanStatus = (plan) => {
     const { planStartDate, planEndDate } = getPlanDates(plan);
     const today = new Date();
@@ -90,16 +89,16 @@ const Manage = () => {
     }
   };
 
-  // [!!수정!!] 1. 일정 목록 필터링 및 정렬 함수를 useMemo로 감싸 성능 최적화
+  // 일정 목록 필터링 및 정렬
   const filteredPlans = useMemo(() => {
     let list = myPlans;
 
-    // 1-1. 활성 탭에 따라 필터링
+    // 활성 탭에 따라 필터링
     if (activeTab !== 'all') {
       list = myPlans.filter(plan => getPlanStatus(plan) === activeTab);
     }
 
-    // 1-2. 시작일(startDate) 기준 과거순(오름차순) 정렬
+    // 시작일(startDate) 기준 과거순(오름차순) 정렬
     // rawData.startDate는 'YYYY-MM-DD' 문자열
     list.sort((a, b) => {
       // Date.parse를 사용해 문자열 날짜를 밀리초로 변환하여 비교
@@ -112,13 +111,13 @@ const Manage = () => {
   }, [myPlans, activeTab]); // myPlans나 activeTab이 변경될 때만 재계산
 
 
-  // [!!신규!!] 2. 탭별 개수를 계산하는 함수 (myPlans 원본 사용)
+  // 탭별 개수를 계산하는 함수 
   const getTabCount = (status) => {
     if (status === 'all') return myPlans.length;
     return myPlans.filter(plan => getPlanStatus(plan) === status).length;
   };
 
-  // 7. 컴포넌트 마운트 시 Firestore에서 데이터 가져오기
+  // 컴포넌트 마운트 시 Firestore에서 데이터 가져오기
   useEffect(() => {
     const fetchMyPlans = async () => {
       const user = auth.currentUser; // 현재 로그인한 사용자
@@ -130,13 +129,13 @@ const Manage = () => {
       }
 
       try {
-        // 1. 'plans' 컬렉션에서 'ownerId'가 현재 사용자 ID와 일치하는 문서만 쿼리
+        // 'plans' 컬렉션에서 'ownerId'가 현재 사용자 ID와 일치하는 문서만 쿼리
         const plansQuery = query(
           collection(db, "plans"),
           where("ownerId", "==", user.uid)
         );
 
-        // 2. 쿼리 실행
+        // 쿼리 실행
         const querySnapshot = await getDocs(plansQuery);
 
         const plansList = querySnapshot.docs.map(doc => {
@@ -158,7 +157,7 @@ const Manage = () => {
             dateRange: `${startDateStr} ~ ${endDateStr}`,
             duration: `${durationNum}일`,
 
-            // [!!신규!!] 8. 모달에 전달할 원본 데이터
+            // 모달에 전달할 원본 데이터
             rawData: {
               name: data.name,
               startDate: startDateStr.replace(/\./g, '-'),
@@ -177,38 +176,37 @@ const Manage = () => {
     };
 
     fetchMyPlans();
-  }, []); // 빈 배열: 컴포넌트가 처음 마운트될 때 1회만 실행
+  }, []); // 컴포넌트가 처음 마운트될 때 1회만 실행
 
-  // [!!신규!!] 8. 삭제 핸들러 함수
+  // 삭제 핸들러 함수
   const handleDeletePlan = async (planId, planName) => {
-    // 1. (요청) 사용자에게 확인 메시지 (일정 이름 포함)
+    // 사용자에게 확인 메시지
     if (!window.confirm(`'${planName}' 일정을 삭제하시겠습니까?`)) {
       return; // 사용자가 '취소'를 누름
     }
 
     try {
-      // 2. (DB 삭제) Firestore에서 삭제
-      // (주의: 하위 컬렉션 'days'도 함께 삭제해야 합니다)
+      // Firestore에서 삭제
       const batch = writeBatch(db);
 
-      // 2-1. 'days' 하위 컬렉션의 모든 문서 가져오기
+      // 'days' 하위 컬렉션의 모든 문서 가져오기
       const daysCollectionRef = collection(db, "plans", planId, "days");
       const daysQuerySnap = await getDocs(daysCollectionRef);
 
-      // 2-2. 'days' 문서들을 배치 삭제에 추가
+      // 'days' 문서들을 배치 삭제에 추가
       daysQuerySnap.forEach(dayDoc => {
         batch.delete(dayDoc.ref); // dayDoc.ref는 'doc(db, "plans", planId, "days", dayDoc.id)'와 동일
       });
 
-      // 2-3. 메인 'plan' 문서를 배치 삭제에 추가
+      // 메인 'plan' 문서를 배치 삭제에 추가
       const planDocRef = doc(db, "plans", planId);
       batch.delete(planDocRef);
 
-      // 2-4. 배치 작업 실행 (모든 삭제를 한 번에 전송)
+      // 배치 작업 실행 (모든 삭제를 한 번에 전송)
       await batch.commit();
 
-      // 3. (UI 삭제) 'myPlans' state에서 삭제된 planId를 가진 항목 제거
-      // filter를 사용해 해당 id를 제외한 새 배열을 만듭니다.
+      // 'myPlans' state에서 삭제된 planId를 가진 항목 제거
+      // filter를 사용해 해당 id를 제외한 새 배열을 만듦
       setMyPlans(prevPlans => prevPlans.filter(plan => plan.id !== planId));
 
       alert("일정이 성공적으로 삭제되었습니다.");
@@ -219,7 +217,7 @@ const Manage = () => {
     }
   };
 
-  // [!!신규!!] 9. 수정 모달 열기/닫기 핸들러
+  // 수정 모달 열기/닫기 핸들러
   const handleOpenEditModal = (plan) => {
     setEditingPlan(plan);
     setIsEditModalOpen(true);
@@ -230,9 +228,8 @@ const Manage = () => {
     setEditingPlan(null);
   };
 
-  // [!!신규!!] 10. (핵심) 일정 업데이트 핸들러
+  // 일정 업데이트 핸들러
   const handleUpdatePlan = async (formData) => {
-    // formData: { planName, startDate, duration }
     if (!editingPlan) return;
 
     const { id: planId, rawData: oldData } = editingPlan;
@@ -247,7 +244,7 @@ const Manage = () => {
     try {
       const batch = writeBatch(db);
 
-      // 1. (배치 1) /plans/{planId} 문서의 기본 정보 업데이트
+      // /plans/{planId} 문서의 기본 정보 업데이트
       const planDocRef = doc(db, "plans", planId);
       batch.update(planDocRef, {
         name: newName,
@@ -255,8 +252,7 @@ const Manage = () => {
         duration: newDuration
       });
 
-      // 2. (배치 2~N) duration(일차) 변경 처리
-      // (기존 'days' 문서를 가져와야 비교 가능)
+      // duration(일차) 변경 처리
       const daysCollectionRef = collection(db, "plans", planId, "days");
       const daysQuerySnap = await getDocs(daysCollectionRef);
       const existingDays = daysQuerySnap.docs.map(d => d.data().dayNumber);
@@ -283,14 +279,10 @@ const Manage = () => {
           }
         });
       }
-
-      // (참고: newStartDate가 바뀌면, 기존 'days' 문서들의 'date' 필드도 
-      //  전부 업데이트해야 하지만, 지금은 'days' 생성/삭제만 구현합니다.)
-
-      // 3. 배치 커밋
+      // 배치 커밋
       await batch.commit();
 
-      // 4. (UI 업데이트) 로컬 state(myPlans) 즉시 수정
+      // 로컬 state(myPlans) 즉시 수정
       setMyPlans(prevPlans => prevPlans.map(p => {
         if (p.id === planId) {
           // 수정한 정보로 새 객체를 만들어 반환
@@ -336,7 +328,7 @@ const Manage = () => {
       >
       </Header>
 
-      {/* [!!수정!!] 3. 탭 네비게이션: getTabCount 함수를 사용해 개수 표시 */}
+      {/* 탭 네비게이션: getTabCount 함수를 사용해 개수 표시 */}
       <nav className="plan-filter-tabs">
         <button
           className={activeTab === 'all' ? 'active' : ''}
@@ -373,7 +365,7 @@ const Manage = () => {
           ) : filteredPlans.length === 0 ? (
             <p>현재 탭에 해당하는 일정이 없습니다.</p>
           ) : (
-            // [!!수정!!] filteredPlans를 맵핑합니다.
+            // filteredPlans를 맵핑합니다.
             filteredPlans.map(item => (
               <ScheduleItem
                 key={item.id}

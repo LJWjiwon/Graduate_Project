@@ -112,28 +112,23 @@ body {
 }
 
 .day-date-input {
-  width: 130px; /* 적절한 너비로 조절 */
+  width: 130px; 
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 4px;
   font-size: 0.9rem;
 }
 
-/* [신규] 비활성화된 날짜 input 스타일 */
+/* 비활성화된 날짜 input 스타일 */
 .day-date-input:disabled {
-  background-color: #ffffff; /* 배경색을 살짝 줌 */
-  color: #333; /* 글자색을 진하게 */
+  background-color: #ffffff; 
+  color: #333; 
   /* 비활성화 상태에서도 테두리가 보이도록 */
   border: 1px solid #ddd; 
-  /* 일부 브라우저에서 비활성화 시 커서를 막는 것을 해제 (선택 사항) */
-  /* cursor: not-allowed; */
-
-  /* (중요) 일부 브라우저(ex. Safari)에서 비활성화 시 글자가 투명해지는 현상 방지 */
+  /* 일부 브라우저에서 비활성화 시 글자가 투명해지는 현상 방지 */
   -webkit-text-fill-color: #333;
   opacity: 1; 
 }
-
-
 
 .save-button {
   background-color: #fff;
@@ -159,7 +154,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0; /* 아이템 구분선 */
+  border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
 }
 
@@ -188,15 +183,15 @@ body {
   color: #888;
 }
 
-/* [신규] 삭제 아이콘에 마우스오버 효과 */
+/* 삭제 아이콘에 마우스오버 효과 */
 .item-icon.delete-icon {
   cursor: pointer;
-  padding: 5px; /* 클릭 영역을 살짝 넓혀줌 (선택 사항) */
-  border-radius: 50%; /* (선택 사항) */
+  padding: 5px; 
+  border-radius: 50%; 
 }
 
 .item-icon.delete-icon:hover {
-  background-color: #f0f0f0; /* 마우스 올렸을 때 배경색 */
+  background-color: #f0f0f0;
   opacity: 0.8;
 }
 
@@ -208,26 +203,24 @@ body {
   padding: 1rem 0;
   font-size: 0.9rem;
   color: #555;
-  border-bottom: 1px solid #f0f0f0; /* 아이템 구분선 */
+  border-bottom: 1px solid #f0f0f0; 
 }
 
-
 .item-time-input {
-  /* ... */
   border: 1px solid #eee;
   border-radius: 4px;
   padding: 2px 4px;
   margin-top: 4px;
 }
 
-/* 값이 없을 때 기본 텍스트 색상 (선택 사항) */
+/* 값이 없을 때 기본 텍스트 색상 */
 .item-time-input:invalid {
-  color: #999; /* 약간 흐린 색상 */
+  color: #999; 
 }
 
-/* 포커스 시 약간의 시각적 피드백 (선택 사항) */
+/* 포커스 시 약간의 시각적 피드백 */
 .item-time-input:focus {
-  background-color: #f0f0f0; /* 배경색 살짝 변경 */
+  background-color: #f0f0f0; 
   border-radius: 3px;
 }
 
@@ -248,30 +241,30 @@ body {
   color: #74a4f3;
 }
 
-/* --- [!!신규!!] 드래그 앤 드롭 스타일 --- */
+/* --- 드래그 앤 드롭 스타일 --- */
 
-/* 1. 드래그 중인 아이템 자체의 스타일 */
+/* 드래그 중인 아이템 자체의 스타일 */
 .itinerary-item.dragging {
   opacity: 0.5;
   background: #e0e0e0;
   cursor: grabbing;
 }
 
-/* 2. 드롭될 위치(다른 아이템)의 스타일 */
+/* 드롭될 위치(다른 아이템)의 스타일 */
 .itinerary-item.drop-target {
   border-top: 3px solid #007bff;
   position: relative;
   z-index: 2;
 }
 
-/* 3. 일반 아이템 (드래그 가능 표시) */
+/* 일반 아이템 (드래그 가능 표시) */
 .itinerary-item {
   cursor: grab;
   position: relative;
   z-index: 1;
 }
 
-/* (선택) 메모 컨테이너가 border-top을 가리지 않도록 */
+/* 메모 컨테이너가 border-top을 가리지 않도록 */
 .memo-container {
   position: relative;
   z-index: 3;
